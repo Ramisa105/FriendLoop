@@ -32,36 +32,12 @@ const Navbar = () => {
         {/* LOGGED IN */}
         {user ? (
           <>
-            {/* NORMAL USER ONLY */}
-            {!user.isAdmin && (
-              <>
-                <Link
-                  to="/discover"
-                  className="text-[#5C3A21] hover:text-[#E07A3D] font-medium"
-                >
-                  Discover
-                </Link>
-
-                <Link
-                  to="/profile"
-                  className="text-[#5C3A21] hover:text-[#E07A3D] font-medium"
-                >
-                  Profile
-                </Link>
-              </>
-            )}
-
-            {/* ADMIN ONLY */}
-            {user.isAdmin && (
-              <Link
-                to="/admin"
-                className="text-[#5C3A21] hover:text-[#E07A3D] font-medium"
-              >
-                Reports
-              </Link>
-            )}
-
-            {/* LOGOUT FOR BOTH */}
+            <Link to="/discover" className="text-[#5C3A21] hover:text-[#E07A3D] font-medium">
+              Discover
+            </Link>
+            <Link to="/profile" className="text-[#5C3A21] hover:text-[#E07A3D] font-medium">
+              Profile
+            </Link>
             <button
               onClick={handleLogout}
               className="bg-[#E07A3D] text-white px-4 py-1.5 rounded-full text-sm hover:bg-[#C45C26] transition"

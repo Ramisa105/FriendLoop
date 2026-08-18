@@ -17,7 +17,9 @@ router.post("/like/:id", auth, async (req, res) => {
 
     // Check if the other user already liked me → create match
     const targetUser = await User.findById(targetUserId);
-    const isMutual = targetUser.likes.includes(currentUserId);
+    const isMutual = targetUser.likes.some(
+  (id) => id.toString() === currentUserId
+);
 
     if (isMutual) {
       // Check if match already exists
