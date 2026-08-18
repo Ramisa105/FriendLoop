@@ -1,14 +1,22 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 const Navbar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = () => {
     logout();
     navigate("/");
   };
+
+  // Login/Register are full-viewport, single-screen layouts with their own
+  // branding built in — the top navbar would push them past 100vh and
+  // cause a scrollbar, so it's hidden on those two routes only.
+  if (location.pathname === "/login" || location.pathname === "/register") {
+    return null;
+  }
 
   return (
     <nav className="bg-white border-b border-[#F0E0D0] px-6 py-4 flex justify-between items-center sticky top-0 z-40">
