@@ -241,11 +241,10 @@ const Profile = () => {
                 <p className="mt-3 text-gray-500 font-medium">{user.email}</p>
               </div>
 
-              {/* University Info */}
+              {/* University info */}
               <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-3">
-                {/* University */}
-                <div className="bg-[#FFF9EA] border border-[#FFDE96] rounded-[22px] px-5 py-4">
-                  <p className="text-xs uppercase tracking-widest font-bold text-gray-500">
+                <div className="bg-[#FFDE96] rounded-[22px] px-5 py-4 rotate-[-1deg]">
+                  <p className="text-xs uppercase tracking-widest font-bold text-[#C93638]">
                     University
                   </p>
 
@@ -254,24 +253,22 @@ const Profile = () => {
                   </p>
                 </div>
 
-                {/* Department */}
-                <div className="bg-[#F3FBFD] border border-[#62C4DA] rounded-[22px] px-5 py-4">
-                  <p className="text-xs uppercase tracking-widest font-bold text-gray-500">
+                <div className="bg-[#62C4DA] rounded-[22px] px-5 py-4 rotate-[1deg]">
+                  <p className="text-xs uppercase tracking-widest font-bold text-white">
                     Department
                   </p>
 
-                  <p className="mt-1 font-black text-gray-800 text-lg">
+                  <p className="mt-1 font-black text-white text-lg">
                     {user.department || "Not added"}
                   </p>
                 </div>
 
-                {/* Semester */}
-                <div className="bg-[#FFF6F2] border border-[#FA855A] rounded-[22px] px-5 py-4">
-                  <p className="text-xs uppercase tracking-widest font-bold text-gray-500">
+                <div className="bg-[#FA855A] rounded-[22px] px-5 py-4 rotate-[-1deg]">
+                  <p className="text-xs uppercase tracking-widest font-bold text-[#C93638]">
                     Semester
                   </p>
 
-                  <p className="mt-1 font-black text-gray-800 text-lg">
+                  <p className="mt-1 font-black text-white text-lg">
                     {user.semester || "Not added"}
                   </p>
                 </div>
