@@ -57,7 +57,7 @@ export const AuthProvider = ({ children }) => {
 
     setUser(userRes.data);
 
-    return res.data;
+    return userRes.data;
   };
 
   // =========================================
