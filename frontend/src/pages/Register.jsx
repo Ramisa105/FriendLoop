@@ -45,9 +45,12 @@ const Register = () => {
   };
 
   return (
-    <div className="h-screen w-full flex overflow-hidden bg-[#FDF6F0]" style={{ height: "100dvh" }}>
+    <div className="relative h-screen w-full flex overflow-hidden bg-[#FDF6F0]" style={{ height: "100dvh" }}>
+      <div className="hero-orb hero-orb-one pointer-events-none absolute opacity-60" />
+      <div className="hero-orb hero-orb-two pointer-events-none absolute opacity-40" />
+
       {/* Brand panel */}
-      <div className="hidden lg:flex lg:w-1/2 relative flex-col justify-between bg-gradient-to-br from-[#E07A3D] via-[#D9713A] to-[#C45C26] text-white px-12 py-10 overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 relative flex-col justify-between bg-gradient-to-br from-[#E07A3D] via-[#D9713A] to-[#C45C26] text-white px-12 py-10 overflow-hidden shadow-[0_20px_50px_rgba(224,122,61,0.18)]">
         {/* Decorative shapes */}
         <div className="animate-float-slow pointer-events-none absolute -top-20 -left-20 w-72 h-72 rounded-full bg-white/10" />
         <div className="animate-float-slower pointer-events-none absolute bottom-[-5rem] right-[-3rem] w-80 h-80 rounded-full bg-white/10" />
@@ -102,7 +105,7 @@ const Register = () => {
 
       {/* Form panel */}
       <div className="flex flex-1 items-center justify-center px-6 py-5 sm:px-10 overflow-y-auto">
-        <div className="animate-scale-in w-full max-w-md">
+        <div className="animate-scale-in w-full max-w-md rounded-3xl border border-[#F0E0D0] bg-white/80 p-6 shadow-[0_20px_40px_rgba(92,58,33,0.08)] backdrop-blur-sm sm:p-7">
           <Link
             to="/"
             className="lg:hidden inline-block mb-4 text-2xl font-bold text-[#E07A3D] transition-transform hover:scale-105"
