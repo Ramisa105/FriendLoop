@@ -60,9 +60,9 @@ const Register = () => {
           FriendLoop
         </Link>
 
-        <div className="relative max-w-md">
+        <div className="relative max-w-md mx-auto text-center">
           <h1
-            className="animate-fade-in-up text-4xl font-bold leading-tight mb-4"
+            className="animate-fade-in-up text-4xl font-bold leading-tight mb-8"
             style={{ animationDelay: "0.1s" }}
           >
             Join a campus community built for real friendships.
@@ -75,7 +75,7 @@ const Register = () => {
             students who get you.
           </p>
 
-          <ul className="mt-8 space-y-3 text-white/90 text-sm">
+          <ul className="mt-8 space-y-3 text-white/90 text-sm text-left inline-block">
             {[
               "Free to join — takes less than a minute",
               "Matches only within your university",
