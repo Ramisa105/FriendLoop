@@ -46,9 +46,9 @@ const Login = () => {
           FriendLoop
         </Link>
 
-        <div className="relative max-w-md">
+        <div className="relative max-w-md mx-auto text-center">
           <h1
-            className="animate-fade-in-up text-4xl font-bold leading-tight mb-4"
+            className="animate-fade-in-up text-4xl font-bold leading-tight mb-8"
             style={{ animationDelay: "0.1s" }}
           >
             Your people are already on campus.
@@ -62,7 +62,7 @@ const Login = () => {
           </p>
 
           <div
-            className="animate-fade-in-up mt-8 flex items-center gap-4"
+            className="animate-fade-in-up mt-8 flex items-center justify-center gap-4"
             style={{ animationDelay: "0.3s" }}
           >
             <div className="flex -space-x-3">
