@@ -46,39 +46,36 @@ const Landing = () => {
     { emoji: "🛡️", label: "Moderated community" },
   ];
 
-  const testimonials = [
-    {
-      quote:
-        "Found my entire study group for finals week within two days of joining. Genuinely changed my semester.",
-      name: "Priya S.",
-      dept: "Computer Science, 3rd year",
-    },
-    {
-      quote:
-        "I moved to a new city for university and didn't know a soul. FriendLoop made it easy to find people in my department.",
-      name: "Daniel O.",
-      dept: "Mechanical Engineering, 1st year",
-    },
-    {
-      quote:
-        "It's refreshingly not a dating app. Just people who want project teammates and real friends.",
-      name: "Aisha K.",
-      dept: "Business Administration, 2nd year",
-    },
-  ];
-
   const swipeCards = [
-    { emoji: "🎨", name: "Maya, 20", dept: "Fine Arts", tags: ["Sketching", "Coffee"] },
-    { emoji: "💻", name: "Leo, 21", dept: "Computer Science", tags: ["Hackathons", "Chess"] },
-    { emoji: "🎵", name: "Sara, 19", dept: "Music", tags: ["Guitar", "Study group"] },
+    {
+      image:
+        "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=900&q=80",
+      name: "Maya, 20",
+      dept: "Fine Arts",
+      tags: ["Sketching", "Coffee"],
+    },
+    {
+      image:
+        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=900&q=80",
+      name: "Leo, 21",
+      dept: "Computer Science",
+      tags: ["Hackathons", "Chess"],
+    },
+    {
+      image:
+        "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=900&q=80",
+      name: "Sara, 19",
+      dept: "Music",
+      tags: ["Guitar", "Study group"],
+    },
   ];
 
   return (
     <div className="min-h-screen bg-[#FDF6F0] overflow-x-hidden">
       {/* Hero Section */}
       <section className="relative overflow-hidden">
-        <div className="animate-float-slow pointer-events-none absolute -top-16 -right-10 w-72 h-72 rounded-full bg-[#E07A3D]/10" />
-        <div className="animate-float-slower pointer-events-none absolute bottom-[-4rem] -left-16 w-80 h-80 rounded-full bg-[#E07A3D]/10" />
+        <div className="hero-orb hero-orb-one pointer-events-none absolute" />
+        <div className="hero-orb hero-orb-two pointer-events-none absolute" />
 
         <div className="relative max-w-6xl mx-auto px-6 pt-16 pb-20 grid lg:grid-cols-2 gap-16 items-center">
           {/* Left: copy + CTAs */}
@@ -150,14 +147,25 @@ const Landing = () => {
               return (
                 <div
                   key={card.name}
-                  className="absolute inset-0 rounded-3xl bg-white border border-[#F0E0D0] shadow-lg flex flex-col overflow-hidden transition-transform duration-300"
+                  className="profile-card absolute inset-0 rounded-3xl bg-white border border-[#F0E0D0] shadow-lg flex flex-col overflow-hidden transition-transform duration-300"
                   style={{
-                    transform: `rotate(${rotate}deg) translateY(${translate}px)`,
                     zIndex: 10 - depth,
+                    "--rotation": `${rotate}deg`,
+                    "--offset": `${translate}px`,
+                    "--card-delay": `${i * 0.45}s`,
                   }}
                 >
-                  <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-[#FDF0E6] to-[#F7DCC4] text-7xl">
-                    {card.emoji}
+                  <div className="relative flex-1 bg-gradient-to-br from-[#FDF0E6] to-[#F7DCC4] overflow-hidden">
+                    {card.image ? (
+                      <img
+                        src={card.image}
+                        alt={card.name}
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-7xl">{card.emoji}</div>
+                    )}
+                    <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#5C3A21]/25 to-transparent" />
                   </div>
                   <div className="p-5">
                     <p className="text-lg font-semibold text-[#5C3A21]">{card.name}</p>
@@ -178,10 +186,10 @@ const Landing = () => {
             })}
 
             {/* Floating like / pass action buttons, Tinder-style */}
-            <div className="animate-float-slow absolute -left-5 top-10 w-14 h-14 rounded-full bg-white shadow-lg border border-[#F0E0D0] flex items-center justify-center text-2xl z-20">
+            <div className="hero-badge animate-float-slow absolute -left-5 top-10 w-14 h-14 rounded-full bg-white shadow-lg border border-[#F0E0D0] flex items-center justify-center text-2xl z-20">
               ✕
             </div>
-            <div className="animate-float-slower absolute -right-5 bottom-16 w-16 h-16 rounded-full bg-[#E07A3D] shadow-lg flex items-center justify-center text-2xl z-20">
+            <div className="hero-badge animate-float-slower absolute -right-5 bottom-16 w-16 h-16 rounded-full bg-[#E07A3D] shadow-lg flex items-center justify-center text-2xl z-20">
               ❤️
             </div>
           </div>
@@ -235,7 +243,7 @@ const Landing = () => {
                 className="animate-fade-in-up relative group flex flex-col items-center"
                 style={{ animationDelay: `${i * 0.12}s` }}
               >
-                <div className="relative z-10 w-12 h-12 rounded-full bg-[#E07A3D] text-white flex items-center justify-center text-lg font-bold mb-4 transition-transform duration-300 group-hover:scale-110 group-hover:-translate-y-0.5 shadow-sm">
+                <div className="step-bubble relative z-10 w-12 h-12 rounded-full bg-[#E07A3D] text-white flex items-center justify-center text-lg font-bold mb-4 transition-transform duration-300 group-hover:scale-110 group-hover:-translate-y-0.5 shadow-sm">
                   {s.n}
                 </div>
                 <h3 className="font-semibold text-[#5C3A21] mb-1.5">{s.title}</h3>
@@ -250,8 +258,8 @@ const Landing = () => {
 
       {/* CTA */}
       <section className="relative overflow-hidden py-15 text-center bg-gradient-to-br from-[#E07A3D] via-[#D9713A] to-[#C45C26]">
-        <div className="animate-float-slow pointer-events-none absolute -top-10 -left-10 w-64 h-64 rounded-full bg-white/10" />
-        <div className="animate-float-slower pointer-events-none absolute -bottom-16 -right-10 w-72 h-72 rounded-full bg-white/10" />
+        <div className="cta-orb pointer-events-none absolute -top-10 -left-10 w-64 h-64 rounded-full bg-white/10" />
+        <div className="cta-orb pointer-events-none absolute -bottom-16 -right-10 w-72 h-72 rounded-full bg-white/10" />
 
         <div className="relative max-w-2xl mx-auto px-6 gap-8 flex flex-col items-center">
           <h2 className="animate-fade-in-up text-3xl font-bold text-white mb-4">
