@@ -10,7 +10,6 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Discover from "./pages/Discover"; // The swipe page (old Home)
 import Profile from "./pages/Profile";
-import Admin from "./pages/Admin";
 
 function App() {
   const [showIntro, setShowIntro] = useState(true);
@@ -46,25 +45,24 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
 
-              {/* Protected Routes */}
-              <Route
-                path="/discover"
-                element={
-                  <ProtectedRoute>
-                    <Discover />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/profile"
-                element={
-                  <ProtectedRoute>
-                    <Profile />
-                  </ProtectedRoute>
-                }
-              />
-            </Routes>
-          </div>
+            {/* Protected Routes */}
+            <Route
+              path="/discover"
+              element={
+                <ProtectedRoute>
+                  <Discover />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
         </div>
       </BrowserRouter>
     </AuthProvider>
