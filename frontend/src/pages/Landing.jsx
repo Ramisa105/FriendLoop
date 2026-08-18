@@ -82,7 +82,7 @@ const Landing = () => {
 
         <div className="relative max-w-6xl mx-auto px-6 pt-16 pb-20 grid lg:grid-cols-2 gap-16 items-center">
           {/* Left: copy + CTAs */}
-          <div className="text-center lg:text-left">
+          <div className="text-center lg:text-left gap-6">
             <span className="animate-fade-in-up inline-block px-4 py-1.5 rounded-full bg-[#FDF0E6] text-[#C45C26] text-sm font-medium mb-6">
               Built exclusively for university students
             </span>
@@ -249,7 +249,7 @@ const Landing = () => {
     
 
       {/* CTA */}
-      <section className="relative overflow-hidden py-18 text-center bg-gradient-to-br from-[#E07A3D] via-[#D9713A] to-[#C45C26]">
+      <section className="relative overflow-hidden py-15 text-center bg-gradient-to-br from-[#E07A3D] via-[#D9713A] to-[#C45C26]">
         <div className="animate-float-slow pointer-events-none absolute -top-10 -left-10 w-64 h-64 rounded-full bg-white/10" />
         <div className="animate-float-slower pointer-events-none absolute -bottom-16 -right-10 w-72 h-72 rounded-full bg-white/10" />
 
@@ -258,8 +258,8 @@ const Landing = () => {
             Ready to find your people?
           </h2>
           <p
-            className="animate-fade-in-up text-white/90 mb-8"
-            style={{ animationDelay: "0.1s" }}
+            className="animate-fade-in-up text-white/100 mb-20"
+            style={{ animationDelay: "0.2s" }}
           >
             Join a growing community of students building real friendships on campus.
           </p>
