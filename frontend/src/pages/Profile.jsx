@@ -1,43 +1,277 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
 import API from "../api/axios";
 
-/* =========================================================
-   HELPERS
-========================================================= */
+// ======================================================
+// OPTIONS
+// ======================================================
 
-const getFormDataFromUser = (user) => ({
-  name: user?.name || "",
-  university: user?.university || "",
-  department: user?.department || "",
-  semester: user?.semester || "",
-  bio: user?.bio || "",
-  interests: user?.interests?.join(", ") || "",
-  skills: user?.skills?.join(", ") || "",
-  friendshipGoals: user?.friendshipGoals?.join(", ") || "",
-});
+const interestOptions = [
+  "Music",
+  "Movies",
+  "Gaming",
+  "Coding",
+  "Photography",
+  "Traveling",
+  "Reading",
+  "Sports",
+  "Art",
+  "Cooking",
+  "Anime",
+  "Fitness",
+  "Technology",
+  "Volunteering",
+];
 
-const getProfilePicUrl = (profilePic) => {
-  if (!profilePic) return "";
+const skillOptions = [
+  "React",
+  "JavaScript",
+  "TypeScript",
+  "Python",
+  "Java",
+  "C++",
+  "Node.js",
+  "UI/UX Design",
+  "Graphic Design",
+  "Photography",
+  "Video Editing",
+  "Public Speaking",
+  "Writing",
+  "Problem Solving",
+  "Research",
+];
 
-  // Already a complete URL or base64 image
-  if (
-    profilePic.startsWith("http://") ||
-    profilePic.startsWith("https://") ||
-    profilePic.startsWith("data:")
-  ) {
-    return profilePic;
-  }
+const friendshipGoalOptions = [
+  "New Friends",
+  "Study Partner",
+  "Project Partner",
+  "Gaming Buddy",
+  "Travel Buddy",
+  "Gym Partner",
+  "Campus Friends",
+  "Networking",
+  "Event Buddy",
+];
 
-  // Image path returned from backend
-  return `http://localhost:5000${
-    profilePic.startsWith("/") ? profilePic : `/${profilePic}`
-  }`;
+// ======================================================
+// MULTI SELECT DROPDOWN COMPONENT
+// ======================================================
+
+const MultiSelectDropdown = ({
+  label,
+  options,
+  selected,
+  onChange,
+  accent = "#FA855A",
+  placeholder,
+}) => {
+  const [open, setOpen] = useState(false);
+
+  const dropdownRef = useRef(null);
+
+  // Include any old/custom values that may already exist in MongoDB
+  const allOptions = Array.from(new Set([...options, ...selected]));
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const toggleOption = (option) => {
+    if (selected.includes(option)) {
+      onChange(selected.filter((item) => item !== option));
+    } else {
+      onChange([...selected, option]);
+    }
+  };
+
+  return (
+    <div ref={dropdownRef} className="relative">
+      <label className="block text-sm font-bold text-gray-800 mb-2">
+        {label}
+      </label>
+
+      {/* Dropdown Button */}
+      <button
+        type="button"
+        onClick={() => setOpen((prev) => !prev)}
+        className="
+          w-full
+          bg-[#F6FFEA]/50
+          border
+          border-gray-200
+          rounded-2xl
+          px-4
+          py-3
+          flex
+          items-center
+          justify-between
+          text-left
+          hover:border-[#FA855A]
+          focus:outline-none
+          focus:ring-2
+          focus:ring-[#FA855A]/15
+          transition
+        "
+      >
+        <span
+          className={
+            selected.length > 0 ? "text-gray-800 font-medium" : "text-gray-400"
+          }
+        >
+          {selected.length > 0 ? `${selected.length} selected` : placeholder}
+        </span>
+
+        {/* Chevron */}
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className={`text-gray-500 transition-transform ${
+            open ? "rotate-180" : ""
+          }`}
+        >
+          <path d="m6 9 6 6 6-6" />
+        </svg>
+      </button>
+
+      {/* Dropdown Menu */}
+      {open && (
+        <div
+          className="
+            absolute
+            z-50
+            left-0
+            right-0
+            mt-2
+            bg-white
+            border
+            border-gray-200
+            rounded-2xl
+            shadow-xl
+            p-2
+            max-h-64
+            overflow-y-auto
+          "
+        >
+          {allOptions.map((option) => {
+            const isSelected = selected.includes(option);
+
+            return (
+              <button
+                key={option}
+                type="button"
+                onClick={() => toggleOption(option)}
+                className="
+                  w-full
+                  flex
+                  items-center
+                  gap-3
+                  px-3
+                  py-2.5
+                  rounded-xl
+                  text-left
+                  hover:bg-gray-50
+                  transition
+                "
+              >
+                {/* Custom checkbox */}
+                <span
+                  className="
+                    w-5
+                    h-5
+                    rounded-md
+                    border-2
+                    flex
+                    items-center
+                    justify-center
+                    shrink-0
+                  "
+                  style={{
+                    borderColor: isSelected ? accent : "#D1D5DB",
+
+                    backgroundColor: isSelected ? accent : "#FFFFFF",
+                  }}
+                >
+                  {isSelected && (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="13"
+                      height="13"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="white"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="m5 12 4 4L19 6" />
+                    </svg>
+                  )}
+                </span>
+
+                <span className="text-gray-800 font-medium">{option}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Selected Tags */}
+      {selected.length > 0 && (
+        <div className="flex flex-wrap gap-2 mt-3">
+          {selected.map((item) => (
+            <button
+              key={item}
+              type="button"
+              onClick={() => toggleOption(item)}
+              className="
+                flex
+                items-center
+                gap-2
+                px-3
+                py-1.5
+                rounded-full
+                bg-gray-50
+                border
+                border-gray-200
+                text-gray-700
+                text-sm
+                font-semibold
+                hover:bg-gray-100
+                transition
+              "
+            >
+              <span>{item}</span>
+
+              <span className="text-gray-400 text-base leading-none">×</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 };
 
-/* =========================================================
-   PROFILE COMPONENT
-========================================================= */
+// ======================================================
+// PROFILE
+// ======================================================
 
 const Profile = () => {
   const { user, updateUser } = useAuth();
@@ -50,38 +284,59 @@ const Profile = () => {
     department: "",
     semester: "",
     bio: "",
-    interests: "",
-    skills: "",
-    friendshipGoals: "",
+
+    // Now arrays
+    interests: [],
+    skills: [],
+    friendshipGoals: [],
   });
 
   const [loading, setLoading] = useState(false);
-  const [uploadingImage, setUploadingImage] = useState(false);
 
   const [message, setMessage] = useState("");
+
   const [error, setError] = useState("");
 
+  // ====================================================
+  // IMAGE STATES
+  // ====================================================
+
   const [selectedImage, setSelectedImage] = useState(null);
+
   const [imagePreview, setImagePreview] = useState("");
 
-  /* =========================================================
-     LOAD USER DATA
-  ========================================================= */
+  const [uploadingImage, setUploadingImage] = useState(false);
+
+  // ====================================================
+  // LOAD USER DATA
+  // ====================================================
 
   useEffect(() => {
-    /*
-      Do not reset the form while the user is editing.
+    if (user) {
+      setFormData({
+        name: user.name || "",
 
-      This is important because uploading a picture updates
-      the AuthContext user. Without this check, the form would
-      reset and unsaved text changes could disappear.
-    */
-    if (user && !isEditing) {
-      setFormData(getFormDataFromUser(user));
+        university: user.university || "",
+
+        department: user.department || "",
+
+        semester: user.semester || "",
+
+        bio: user.bio || "",
+
+        interests: user.interests || [],
+
+        skills: user.skills || [],
+
+        friendshipGoals: user.friendshipGoals || [],
+      });
     }
-  }, [user, isEditing]);
+  }, [user]);
 
-  /* Clean up temporary preview URL */
+  // ====================================================
+  // CLEAN IMAGE PREVIEW
+  // ====================================================
+
   useEffect(() => {
     return () => {
       if (imagePreview) {
@@ -90,22 +345,43 @@ const Profile = () => {
     };
   }, [imagePreview]);
 
-  /* =========================================================
-     INPUT CHANGE
-  ========================================================= */
+  // ====================================================
+  // NORMAL INPUT CHANGE
+  // ====================================================
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
 
-    setFormData((previousData) => ({
-      ...previousData,
-      [name]: value,
+      [e.target.name]: e.target.value,
     }));
   };
 
-  /* =========================================================
-     IMAGE SELECTION
-  ========================================================= */
+  // ====================================================
+  // PROFILE IMAGE URL
+  // ====================================================
+
+  const getProfilePicSrc = (profilePic) => {
+    if (!profilePic) {
+      return "";
+    }
+
+    // Already full URL or base64
+    if (
+      profilePic.startsWith("http://") ||
+      profilePic.startsWith("https://") ||
+      profilePic.startsWith("data:")
+    ) {
+      return profilePic;
+    }
+
+    // Backend uploads folder
+    return `http://localhost:5000${profilePic}`;
+  };
+
+  // ====================================================
+  // SELECT IMAGE
+  // ====================================================
 
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
@@ -115,51 +391,57 @@ const Profile = () => {
     setError("");
     setMessage("");
 
-    // Validate file type
-    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+    const allowedTypes = ["image/png", "image/jpeg", "image/webp"];
 
     if (!allowedTypes.includes(file.type)) {
-      setError("Please choose a JPG, PNG, or WEBP image.");
+      setError("Please choose a PNG, JPG, JPEG, or WEBP image.");
+
       e.target.value = "";
       return;
     }
 
-    // Optional 5 MB limit
     if (file.size > 5 * 1024 * 1024) {
-      setError("Profile picture must be smaller than 5 MB.");
+      setError("Image must be smaller than 5 MB.");
+
       e.target.value = "";
       return;
+    }
+
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
     }
 
     setSelectedImage(file);
 
     const previewUrl = URL.createObjectURL(file);
+
     setImagePreview(previewUrl);
   };
 
-  /* =========================================================
-     UPLOAD PROFILE PICTURE
-     This button only appears inside EDIT PROFILE.
-  ========================================================= */
+  // ====================================================
+  // UPLOAD IMAGE
+  // ====================================================
 
   const handleImageUpload = async () => {
     if (!selectedImage) {
-      setError("Please choose a picture first.");
+      setError("Please choose an image first.");
+
       return;
     }
 
     try {
       setUploadingImage(true);
+
       setError("");
       setMessage("");
 
-      const imageData = new FormData();
+      const data = new FormData();
 
-      imageData.append("profilePic", selectedImage);
+      data.append("profilePic", selectedImage);
 
-      const res = await API.post("/users/me/profile-picture", imageData);
+      const res = await API.post("/users/me/profile-picture", data);
 
-      // Update AuthContext so new picture appears everywhere
+      // Update logged-in user
       updateUser(res.data);
 
       setSelectedImage(null);
@@ -169,6 +451,8 @@ const Profile = () => {
     } catch (err) {
       console.error("Profile picture upload error:", err);
 
+      console.error("Server response:", err.response?.data);
+
       setError(
         err.response?.data?.message || "Failed to upload profile picture.",
       );
@@ -177,12 +461,38 @@ const Profile = () => {
     }
   };
 
-  /* =========================================================
-     EDIT PROFILE
-  ========================================================= */
+  // ====================================================
+  // RESET FORM
+  // ====================================================
+
+  const resetForm = () => {
+    if (!user) return;
+
+    setFormData({
+      name: user.name || "",
+
+      university: user.university || "",
+
+      department: user.department || "",
+
+      semester: user.semester || "",
+
+      bio: user.bio || "",
+
+      interests: user.interests || [],
+
+      skills: user.skills || [],
+
+      friendshipGoals: user.friendshipGoals || [],
+    });
+  };
+
+  // ====================================================
+  // OPEN EDIT
+  // ====================================================
 
   const handleEdit = () => {
-    setFormData(getFormDataFromUser(user));
+    resetForm();
 
     setSelectedImage(null);
     setImagePreview("");
@@ -193,12 +503,12 @@ const Profile = () => {
     setIsEditing(true);
   };
 
-  /* =========================================================
-     CANCEL EDIT
-  ========================================================= */
+  // ====================================================
+  // CANCEL EDIT
+  // ====================================================
 
   const handleCancel = () => {
-    setFormData(getFormDataFromUser(user));
+    resetForm();
 
     setSelectedImage(null);
     setImagePreview("");
@@ -209,115 +519,47 @@ const Profile = () => {
     setIsEditing(false);
   };
 
-  /* =========================================================
-     UPDATE PROFILE
-  ========================================================= */
+  // ====================================================
+  // SAVE PROFILE INFORMATION
+  // ====================================================
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    setLoading(true);
+
+    setMessage("");
+    setError("");
+
     try {
-      setLoading(true);
-      setMessage("");
-      setError("");
-
-      /* -----------------------------------------
-         Normal profile fields
-      ----------------------------------------- */
-
+      // These three fields are already arrays
       const payload = {
-        name: formData.name.trim(),
+        name: formData.name,
 
-        university: formData.university.trim(),
+        university: formData.university,
 
-        department: formData.department.trim(),
+        department: formData.department,
 
-        semester: formData.semester.trim(),
+        semester: formData.semester,
 
-        bio: formData.bio.trim(),
+        bio: formData.bio,
 
-        interests: formData.interests
-          .split(",")
-          .map((item) => item.trim())
-          .filter(Boolean),
+        interests: formData.interests,
 
-        skills: formData.skills
-          .split(",")
-          .map((item) => item.trim())
-          .filter(Boolean),
+        skills: formData.skills,
 
-        friendshipGoals: formData.friendshipGoals
-          .split(",")
-          .map((item) => item.trim())
-          .filter(Boolean),
+        friendshipGoals: formData.friendshipGoals,
       };
 
-      /* -----------------------------------------
-         1. Update normal profile information
-      ----------------------------------------- */
+      const res = await API.put("/users/me", payload);
 
-      const profileRes = await API.put("/users/me", payload);
-
-      let updatedUser = profileRes.data;
-
-      /* -----------------------------------------
-         2. If user selected a new picture but did
-            not press Upload Picture separately,
-            upload it here automatically.
-      ----------------------------------------- */
-
-      if (selectedImage) {
-        try {
-          const imageData = new FormData();
-
-          imageData.append("profilePic", selectedImage);
-
-          const imageRes = await API.post(
-            "/users/me/profile-picture",
-            imageData,
-          );
-
-          updatedUser = imageRes.data;
-        } catch (imageError) {
-          /*
-            Profile text was already saved,
-            so keep that updated information.
-          */
-          updateUser(profileRes.data);
-
-          console.error("Profile picture upload error:", imageError);
-
-          setError(
-            imageError.response?.data?.message ||
-              "Profile information was updated, but the picture could not be uploaded.",
-          );
-
-          return;
-        }
-      }
-
-      /* -----------------------------------------
-         3. Update global user state
-      ----------------------------------------- */
-
-      updateUser(updatedUser);
-
-      /* -----------------------------------------
-         4. Clear temporary picture state
-      ----------------------------------------- */
-
-      setSelectedImage(null);
-      setImagePreview("");
-
-      /* -----------------------------------------
-         5. Leave edit screen
-      ----------------------------------------- */
-
-      setIsEditing(false);
+      updateUser(res.data);
 
       setMessage("Profile updated successfully.");
+
+      setIsEditing(false);
     } catch (err) {
-      console.error("Update profile error:", err);
+      console.error("Profile update error:", err);
 
       setError(err.response?.data?.message || "Failed to update profile.");
     } finally {
@@ -325,9 +567,9 @@ const Profile = () => {
     }
   };
 
-  /* =========================================================
-     LOADING
-  ========================================================= */
+  // ====================================================
+  // LOADING
+  // ====================================================
 
   if (!user) {
     return (
@@ -337,55 +579,146 @@ const Profile = () => {
     );
   }
 
-  /* =========================================================
-     PAGE
-  ========================================================= */
-
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#F6FFEA] py-10 px-4">
-      {/* Background decorations */}
+    <div
+      className="
+        relative
+        min-h-screen
+        overflow-hidden
+        bg-[#F6FFEA]
+        py-10
+        px-4
+      "
+    >
+      {/* Background decoration */}
+      <div
+        className="
+          pointer-events-none
+          absolute
+          -top-32
+          -left-32
+          w-80
+          h-80
+          bg-[#FA855A]
+          opacity-20
+          blur-3xl
+          rounded-full
+        "
+      />
 
-      <div className="pointer-events-none absolute -top-32 -left-32 w-80 h-80 bg-[#FA855A] opacity-20 blur-3xl rounded-full" />
+      <div
+        className="
+          pointer-events-none
+          absolute
+          top-40
+          -right-32
+          w-80
+          h-80
+          bg-[#62C4DA]
+          opacity-20
+          blur-3xl
+          rounded-full
+        "
+      />
 
-      <div className="pointer-events-none absolute top-40 -right-32 w-80 h-80 bg-[#62C4DA] opacity-20 blur-3xl rounded-full" />
+      <div
+        className="
+          pointer-events-none
+          absolute
+          bottom-0
+          left-1/3
+          w-72
+          h-72
+          bg-[#FFDE96]
+          opacity-20
+          blur-3xl
+          rounded-full
+        "
+      />
 
-      <div className="pointer-events-none absolute bottom-0 left-1/3 w-72 h-72 bg-[#FFDE96] opacity-20 blur-3xl rounded-full" />
-
-      {/* =====================================================
-          MAIN PROFILE VIEW
-      ====================================================== */}
+      {/* ================================================= */}
+      {/* PROFILE VIEW */}
+      {/* ================================================= */}
 
       {!isEditing && (
         <div className="relative z-10 max-w-3xl mx-auto">
-          {/* Success Message */}
-
+          {/* Message */}
           {message && (
-            <div className="mb-5 bg-white border border-[#62C4DA] text-gray-800 font-medium px-5 py-3 rounded-2xl shadow-sm">
+            <div
+              className="
+                mb-5
+                bg-white
+                border
+                border-[#62C4DA]
+                text-gray-800
+                font-medium
+                px-5
+                py-3
+                rounded-2xl
+                shadow-sm
+              "
+            >
               {message}
             </div>
           )}
 
-          {/* Error Message */}
+          {/* Profile Card */}
+          <div
+            className="
+              bg-white
+              rounded-[34px]
+              overflow-hidden
+              shadow-xl
+              border
+              border-gray-100
+            "
+          >
+            {/* Header */}
+            <div
+              className="
+                relative
+                bg-[#FA855A]
+                px-7
+                pt-8
+                pb-28
+              "
+            >
+              <div
+                className="
+                  absolute
+                  top-7
+                  right-40
+                  w-8
+                  h-8
+                  bg-[#FFDE96]
+                  rotate-12
+                  rounded-lg
+                "
+              />
 
-          {error && (
-            <div className="mb-5 bg-red-50 border border-red-200 text-red-700 font-medium px-5 py-3 rounded-2xl">
-              {error}
-            </div>
-          )}
+              <div
+                className="
+                  absolute
+                  bottom-6
+                  left-8
+                  w-16
+                  h-3
+                  bg-[#C93638]
+                  rotate-[-4deg]
+                  rounded-full
+                  opacity-80
+                "
+              />
 
-          {/* Main Profile Card */}
-
-          <div className="bg-white rounded-[34px] overflow-hidden shadow-xl border border-gray-100">
-            {/* ===============================
-                Header
-            =============================== */}
-
-            <div className="relative bg-[#FA855A] px-7 pt-8 pb-28">
-              <div className="absolute top-7 right-40 w-8 h-8 bg-[#FFDE96] rotate-12 rounded-lg" />
-
-              <div className="absolute bottom-6 left-8 w-16 h-3 bg-[#C93638] rotate-[-4deg] rounded-full opacity-80" />
-
-              <p className="text-[#7E2728] font-black uppercase tracking-[0.24em] text-xs">
+              <p
+                className="
+                  text-[#7E2728]
+                  font-black
+                  uppercase
+                  tracking-[0.24em]
+                  text-xs
+                "
+              >
                 FriendLoop Profile
               </p>
 
@@ -397,7 +730,7 @@ const Profile = () => {
                   top-6
                   right-6
                   bg-white
-                  text-black
+                  text-gray-900
                   px-5
                   py-2
                   rounded-full
@@ -405,53 +738,50 @@ const Profile = () => {
                   shadow-sm
                   hover:-translate-y-0.5
                   transition
-                  duration-200
                 "
               >
                 Edit Profile
               </button>
             </div>
 
-            {/* ===============================
-                PROFILE PICTURE
+            {/* =========================================== */}
+            {/* PROFILE PICTURE - DISPLAY ONLY */}
+            {/* =========================================== */}
 
-                DISPLAY ONLY.
-                NO choose file here.
-                NO upload button here.
-            =============================== */}
-
-            <div className="px-7">
-              <div className="-mt-16 relative z-10">
+            <div className="relative px-7">
+              <div className="-mt-20 relative w-40 h-40">
                 {user.profilePic ? (
                   <img
-                    src={getProfilePicUrl(user.profilePic)}
-                    alt={user.name}
+                    src={getProfilePicSrc(user.profilePic)}
+                    alt="Profile"
                     className="
-                      w-32
-                      h-32
-                      rounded-[28px]
+                      w-40
+                      h-40
+                      rounded-[30px]
                       object-cover
-                      border-4
+                      border-[6px]
                       border-white
                       shadow-lg
+                      rotate-[-2deg]
                     "
                   />
                 ) : (
                   <div
                     className="
-                      w-32
-                      h-32
-                      rounded-[28px]
+                      w-40
+                      h-40
+                      rounded-[30px]
                       bg-[#62C4DA]
-                      border-4
+                      border-[6px]
                       border-white
                       shadow-lg
+                      rotate-[-2deg]
                       flex
                       items-center
                       justify-center
                     "
                   >
-                    <span className="text-white text-4xl font-black">
+                    <span className="text-white text-6xl font-black">
                       {user.name?.charAt(0).toUpperCase()}
                     </span>
                   </div>
@@ -459,15 +789,18 @@ const Profile = () => {
               </div>
             </div>
 
-            {/* ===============================
-                Profile Content
-            =============================== */}
-
+            {/* Profile Information */}
             <div className="px-7 pb-8">
-              {/* Name + Email */}
-
+              {/* Name */}
               <div className="mt-5">
-                <h1 className="text-5xl font-black !text-black leading-none">
+                <h1
+                  className="
+                    text-5xl
+                    font-black
+                    !text-black
+                    leading-none
+                  "
+                >
                   {user.name}
                 </h1>
 
@@ -475,51 +808,121 @@ const Profile = () => {
               </div>
 
               {/* University Information */}
-
-              <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div
+                className="
+                  mt-8
+                  grid
+                  grid-cols-1
+                  md:grid-cols-3
+                  gap-3
+                "
+              >
                 {/* University */}
-
-                <div className="bg-[#FFDE96] rounded-[22px] px-5 py-4 rotate-[-1deg]">
-                  <p className="text-xs uppercase tracking-widest font-bold text-[#C93638]">
+                <div
+                  className="
+                    bg-[#FFF9EA]
+                    border
+                    border-[#FFDE96]
+                    rounded-[22px]
+                    px-5
+                    py-4
+                  "
+                >
+                  <p
+                    className="
+                      text-xs
+                      uppercase
+                      tracking-widest
+                      font-bold
+                      text-gray-500
+                    "
+                  >
                     University
                   </p>
 
-                  <p className="mt-1 font-black !text-black text-lg">
+                  <p className="mt-1 font-black text-gray-800 text-lg">
                     {user.university || "Not added"}
                   </p>
                 </div>
 
                 {/* Department */}
-
-                <div className="bg-[#62C4DA] rounded-[22px] px-5 py-4 rotate-[1deg]">
-                  <p className="text-xs uppercase tracking-widest font-bold text-white">
+                <div
+                  className="
+                    bg-[#F3FBFD]
+                    border
+                    border-[#62C4DA]
+                    rounded-[22px]
+                    px-5
+                    py-4
+                  "
+                >
+                  <p
+                    className="
+                      text-xs
+                      uppercase
+                      tracking-widest
+                      font-bold
+                      text-gray-500
+                    "
+                  >
                     Department
                   </p>
 
-                  <p className="mt-1 font-black text-white text-lg">
+                  <p className="mt-1 font-black text-gray-800 text-lg">
                     {user.department || "Not added"}
                   </p>
                 </div>
 
                 {/* Semester */}
-
-                <div className="bg-[#FA855A] rounded-[22px] px-5 py-4 rotate-[-1deg]">
-                  <p className="text-xs uppercase tracking-widest font-bold text-[#C93638]">
+                <div
+                  className="
+                    bg-[#FFF6F2]
+                    border
+                    border-[#FA855A]
+                    rounded-[22px]
+                    px-5
+                    py-4
+                  "
+                >
+                  <p
+                    className="
+                      text-xs
+                      uppercase
+                      tracking-widest
+                      font-bold
+                      text-gray-500
+                    "
+                  >
                     Semester
                   </p>
 
-                  <p className="mt-1 font-black text-white text-lg">
+                  <p className="mt-1 font-black text-gray-800 text-lg">
                     {user.semester || "Not added"}
                   </p>
                 </div>
               </div>
 
-              {/* ===============================
-                  About Me
-              =============================== */}
-
-              <div className="mt-8 bg-[#F6FFEA]/60 border border-gray-200 rounded-[26px] p-6">
-                <p className="uppercase tracking-[0.2em] text-xs font-black text-[#FA855A] mb-3">
+              {/* About */}
+              <div
+                className="
+                  mt-8
+                  bg-[#F6FFEA]/60
+                  border
+                  border-gray-200
+                  rounded-[26px]
+                  p-6
+                "
+              >
+                <p
+                  className="
+                    uppercase
+                    tracking-[0.2em]
+                    text-xs
+                    font-black
+                    text-[#FA855A]
+                    mb-3
+                  "
+                >
                   About Me
                 </p>
 
@@ -529,9 +932,9 @@ const Profile = () => {
                 </p>
               </div>
 
-              {/* ===============================
-                  Interests
-              =============================== */}
+              {/* ======================================= */}
+              {/* INTERESTS */}
+              {/* ======================================= */}
 
               <div className="mt-8">
                 <div className="flex items-center gap-3 mb-4">
@@ -542,20 +945,20 @@ const Profile = () => {
 
                 <div className="flex flex-wrap gap-3">
                   {user.interests?.length > 0 ? (
-                    user.interests.map((interest, index) => (
+                    user.interests.map((interest) => (
                       <span
-                        key={`${interest}-${index}`}
+                        key={interest}
                         className="
-                          px-5
-                          py-2
-                          rounded-full
-                          bg-[#FFDE96]/50
-                          border
-                          border-[#FFDE96]
-                          !text-black
-                          font-semibold
-                          text-sm
-                        "
+                            px-5
+                            py-2
+                            rounded-full
+                            bg-[#FFDE96]/50
+                            border
+                            border-[#FFDE96]
+                            !text-black
+                            font-semibold
+                            text-sm
+                          "
                       >
                         {interest}
                       </span>
@@ -566,9 +969,9 @@ const Profile = () => {
                 </div>
               </div>
 
-              {/* ===============================
-                  Skills
-              =============================== */}
+              {/* ======================================= */}
+              {/* SKILLS */}
+              {/* ======================================= */}
 
               <div className="mt-8">
                 <div className="flex items-center gap-3 mb-4">
@@ -579,20 +982,20 @@ const Profile = () => {
 
                 <div className="flex flex-wrap gap-3">
                   {user.skills?.length > 0 ? (
-                    user.skills.map((skill, index) => (
+                    user.skills.map((skill) => (
                       <span
-                        key={`${skill}-${index}`}
+                        key={skill}
                         className="
-                          px-5
-                          py-2
-                          rounded-full
-                          bg-[#F3FBFD]
-                          border
-                          border-[#62C4DA]
-                          !text-black
-                          font-semibold
-                          text-sm
-                        "
+                            px-5
+                            py-2
+                            rounded-full
+                            bg-[#F3FBFD]
+                            border
+                            border-[#62C4DA]
+                            text-gray-800
+                            font-semibold
+                            text-sm
+                          "
                       >
                         {skill}
                       </span>
@@ -603,9 +1006,9 @@ const Profile = () => {
                 </div>
               </div>
 
-              {/* ===============================
-                  Friendship Goals
-              =============================== */}
+              {/* ======================================= */}
+              {/* HERE FOR */}
+              {/* ======================================= */}
 
               <div className="mt-8">
                 <div className="flex items-center gap-3 mb-4">
@@ -616,20 +1019,20 @@ const Profile = () => {
 
                 <div className="flex flex-wrap gap-3">
                   {user.friendshipGoals?.length > 0 ? (
-                    user.friendshipGoals.map((goal, index) => (
+                    user.friendshipGoals.map((goal) => (
                       <span
-                        key={`${goal}-${index}`}
+                        key={goal}
                         className="
-                          px-5
-                          py-2
-                          rounded-full
-                          bg-[#FFF6F2]
-                          border
-                          border-[#FA855A]
-                          !text-black
-                          font-semibold
-                          text-sm
-                        "
+                            px-5
+                            py-2
+                            rounded-full
+                            bg-[#FFF6F2]
+                            border
+                            border-[#FA855A]
+                            text-gray-800
+                            font-semibold
+                            text-sm
+                          "
                       >
                         {goal}
                       </span>
@@ -642,8 +1045,7 @@ const Profile = () => {
                 </div>
               </div>
 
-              {/* Bottom Edit Button */}
-
+              {/* Edit */}
               <button
                 type="button"
                 onClick={handleEdit}
@@ -659,7 +1061,6 @@ const Profile = () => {
                   hover:bg-[#B52F31]
                   hover:-translate-y-0.5
                   transition
-                  duration-200
                   shadow-md
                 "
               >
@@ -670,20 +1071,35 @@ const Profile = () => {
         </div>
       )}
 
-      {/* =====================================================
-          EDIT PROFILE
-      ====================================================== */}
+      {/* ================================================= */}
+      {/* EDIT PROFILE */}
+      {/* ================================================= */}
 
       {isEditing && (
         <div className="relative z-10 max-w-3xl mx-auto">
           {/* Heading */}
-
           <div className="mb-7">
-            <p className="uppercase text-[#FA855A] tracking-[0.24em] text-xs font-bold">
+            <p
+              className="
+                uppercase
+                text-[#FA855A]
+                tracking-[0.24em]
+                text-xs
+                font-bold
+              "
+            >
               Your profile
             </p>
 
-            <h1 className="text-4xl md:text-5xl font-black !text-black mt-2">
+            <h1
+              className="
+                text-4xl
+                md:text-5xl
+                font-black
+                !text-black
+                mt-2
+              "
+            >
               Edit Profile
             </h1>
 
@@ -692,25 +1108,41 @@ const Profile = () => {
             </p>
           </div>
 
-          {/* Success Message */}
-
-          {message && (
-            <div className="bg-[#F3FBFD] border border-[#62C4DA] text-gray-800 p-4 rounded-2xl mb-5 font-medium">
-              {message}
-            </div>
-          )}
-
-          {/* Error Message */}
-
+          {/* Error */}
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-2xl mb-5 font-medium">
+            <div
+              className="
+                bg-red-50
+                border
+                border-red-200
+                text-red-700
+                p-4
+                rounded-2xl
+                mb-5
+                font-medium
+              "
+            >
               {error}
             </div>
           )}
 
-          {/* =================================================
-              Edit Form
-          ================================================= */}
+          {/* Message */}
+          {message && (
+            <div
+              className="
+                bg-green-50
+                border
+                border-green-200
+                text-green-700
+                p-4
+                rounded-2xl
+                mb-5
+                font-medium
+              "
+            >
+              {message}
+            </div>
+          )}
 
           <form
             onSubmit={handleSubmit}
@@ -722,153 +1154,127 @@ const Profile = () => {
               md:p-8
               rounded-[32px]
               shadow-xl
-              space-y-6
+              space-y-7
             "
           >
-            {/* ===============================================
-                PROFILE PICTURE UPLOAD
-
-                THIS EXISTS ONLY INSIDE EDIT PROFILE.
-            =============================================== */}
+            {/* ======================================= */}
+            {/* PROFILE PICTURE UPLOAD */}
+            {/* ======================================= */}
 
             <div>
-              <label className="block text-sm font-bold !text-black mb-3">
-                Upload Picture
+              <label className="block text-sm font-bold text-gray-800 mb-3">
+                Profile Picture
               </label>
 
-              <div
-                className="
-                  bg-[#F6FFEA]/60
-                  border
-                  border-gray-200
-                  rounded-[24px]
-                  p-5
-                "
-              >
-                <div className="flex flex-col sm:flex-row sm:items-center gap-5">
-                  {/* Image Preview */}
-
-                  <div className="shrink-0">
-                    {imagePreview ? (
-                      <img
-                        src={imagePreview}
-                        alt="New profile preview"
-                        className="
-                          w-28
-                          h-28
-                          rounded-[24px]
-                          object-cover
-                          border-4
-                          border-white
-                          shadow-md
-                        "
-                      />
-                    ) : user.profilePic ? (
-                      <img
-                        src={getProfilePicUrl(user.profilePic)}
-                        alt="Current profile"
-                        className="
-                          w-28
-                          h-28
-                          rounded-[24px]
-                          object-cover
-                          border-4
-                          border-white
-                          shadow-md
-                        "
-                      />
-                    ) : (
-                      <div
-                        className="
-                          w-28
-                          h-28
-                          rounded-[24px]
-                          bg-[#62C4DA]
-                          flex
-                          items-center
-                          justify-center
-                          border-4
-                          border-white
-                          shadow-md
-                        "
-                      >
-                        <span className="text-white text-4xl font-black">
-                          {user.name?.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Choose File + Upload */}
-
-                  <div className="flex-1 w-full">
-                    <input
-                      type="file"
-                      accept="image/png,image/jpeg,image/webp"
-                      onChange={handleImageChange}
+              <div className="flex flex-col sm:flex-row sm:items-center gap-5">
+                {/* Preview */}
+                <div className="shrink-0">
+                  {imagePreview ? (
+                    <img
+                      src={imagePreview}
+                      alt="Selected Preview"
                       className="
-                        block
-                        w-full
-                        text-sm
-                        text-gray-600
-
-                        file:mr-4
-                        file:py-2
-                        file:px-5
-                        file:rounded-full
-                        file:border-0
-                        file:bg-[#FFDE96]
-                        file:text-black
-                        file:font-bold
-
-                        hover:file:bg-[#F7CF78]
-                        cursor-pointer
+                        w-28
+                        h-28
+                        rounded-[24px]
+                        object-cover
+                        shadow-md
                       "
                     />
+                  ) : user.profilePic ? (
+                    <img
+                      src={getProfilePicSrc(user.profilePic)}
+                      alt="Current Profile"
+                      className="
+                        w-28
+                        h-28
+                        rounded-[24px]
+                        object-cover
+                        shadow-md
+                      "
+                    />
+                  ) : (
+                    <div
+                      className="
+                        w-28
+                        h-28
+                        rounded-[24px]
+                        bg-[#62C4DA]
+                        flex
+                        items-center
+                        justify-center
+                      "
+                    >
+                      <span className="text-white text-4xl font-black">
+                        {user.name?.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                  )}
+                </div>
 
-                    <p className="text-xs text-gray-400 mt-2">
-                      JPG, PNG or WEBP. Maximum 5 MB.
-                    </p>
+                <div className="flex-1">
+                  {/* Choose File */}
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    onChange={handleImageChange}
+                    className="
+                      block
+                      w-full
+                      text-sm
+                      text-gray-600
+                      file:mr-4
+                      file:py-2
+                      file:px-4
+                      file:rounded-full
+                      file:border-0
+                      file:bg-[#FFDE96]
+                      file:text-black
+                      file:font-semibold
+                      hover:file:bg-[#F7CF78]
+                      cursor-pointer
+                    "
+                  />
 
-                    {selectedImage && (
-                      <>
-                        <p className="text-sm !text-black font-semibold mt-3">
-                          Selected: {selectedImage.name}
-                        </p>
+                  <p className="text-xs text-gray-400 mt-2">
+                    PNG, JPG, JPEG or WEBP. Maximum 5 MB.
+                  </p>
 
-                        <button
-                          type="button"
-                          onClick={handleImageUpload}
-                          disabled={uploadingImage}
-                          className="
-                            mt-3
-                            bg-[#FA855A]
-                            text-white
-                            px-5
-                            py-2.5
-                            rounded-xl
-                            font-bold
-                            hover:bg-[#C93638]
-                            transition
-                            disabled:opacity-50
-                            disabled:cursor-not-allowed
-                          "
-                        >
-                          {uploadingImage ? "Uploading..." : "Upload Picture"}
-                        </button>
-                      </>
-                    )}
-                  </div>
+                  {/* Upload Picture */}
+                  {selectedImage && (
+                    <button
+                      type="button"
+                      onClick={handleImageUpload}
+                      disabled={uploadingImage}
+                      className="
+                        mt-4
+                        bg-[#FA855A]
+                        text-white
+                        px-5
+                        py-2.5
+                        rounded-xl
+                        font-semibold
+                        hover:bg-[#C93638]
+                        transition
+                        disabled:opacity-50
+                        disabled:cursor-not-allowed
+                      "
+                    >
+                      {uploadingImage ? "Uploading..." : "Upload Picture"}
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
 
-            {/* ===============================================
-                Full Name
-            =============================================== */}
+            <div className="border-t border-gray-100" />
+
+            {/* ======================================= */}
+            {/* FULL NAME */}
+            {/* ======================================= */}
 
             <div>
-              <label className="block text-sm font-bold !text-black mb-2">
+              <label className="block text-sm font-bold text-gray-800 mb-2">
                 Full Name
               </label>
 
@@ -886,7 +1292,7 @@ const Profile = () => {
                   rounded-2xl
                   px-4
                   py-3
-                  !text-black
+                  text-gray-800
                   outline-none
                   focus:border-[#FA855A]
                   focus:ring-2
@@ -896,15 +1302,13 @@ const Profile = () => {
               />
             </div>
 
-            {/* ===============================================
-                University + Department
-            =============================================== */}
+            {/* ======================================= */}
+            {/* UNIVERSITY + DEPARTMENT */}
+            {/* ======================================= */}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {/* University */}
-
               <div>
-                <label className="block text-sm font-bold !text-black mb-2">
+                <label className="block text-sm font-bold text-gray-800 mb-2">
                   University
                 </label>
 
@@ -922,8 +1326,7 @@ const Profile = () => {
                     rounded-2xl
                     px-4
                     py-3
-                    !text-black
-                    placeholder:text-gray-400
+                    text-gray-800
                     outline-none
                     focus:border-[#FA855A]
                     focus:ring-2
@@ -933,10 +1336,8 @@ const Profile = () => {
                 />
               </div>
 
-              {/* Department */}
-
               <div>
-                <label className="block text-sm font-bold !text-black mb-2">
+                <label className="block text-sm font-bold text-gray-800 mb-2">
                   Department
                 </label>
 
@@ -954,8 +1355,7 @@ const Profile = () => {
                     rounded-2xl
                     px-4
                     py-3
-                    !text-black
-                    placeholder:text-gray-400
+                    text-gray-800
                     outline-none
                     focus:border-[#FA855A]
                     focus:ring-2
@@ -966,12 +1366,12 @@ const Profile = () => {
               </div>
             </div>
 
-            {/* ===============================================
-                Semester
-            =============================================== */}
+            {/* ======================================= */}
+            {/* SEMESTER */}
+            {/* ======================================= */}
 
             <div>
-              <label className="block text-sm font-bold !text-black mb-2">
+              <label className="block text-sm font-bold text-gray-800 mb-2">
                 Semester
               </label>
 
@@ -989,8 +1389,7 @@ const Profile = () => {
                   rounded-2xl
                   px-4
                   py-3
-                  !text-black
-                  placeholder:text-gray-400
+                  text-gray-800
                   outline-none
                   focus:border-[#FA855A]
                   focus:ring-2
@@ -1000,12 +1399,12 @@ const Profile = () => {
               />
             </div>
 
-            {/* ===============================================
-                Bio
-            =============================================== */}
+            {/* ======================================= */}
+            {/* ABOUT */}
+            {/* ======================================= */}
 
             <div>
-              <label className="block text-sm font-bold !text-black mb-2">
+              <label className="block text-sm font-bold text-gray-800 mb-2">
                 About Me
               </label>
 
@@ -1013,7 +1412,7 @@ const Profile = () => {
                 name="bio"
                 value={formData.bio}
                 onChange={handleChange}
-                rows={4}
+                rows="4"
                 placeholder="Tell people a little about yourself..."
                 className="
                   w-full
@@ -1023,8 +1422,7 @@ const Profile = () => {
                   rounded-2xl
                   px-4
                   py-3
-                  !text-black
-                  placeholder:text-gray-400
+                  text-gray-800
                   outline-none
                   focus:border-[#FA855A]
                   focus:ring-2
@@ -1035,151 +1433,88 @@ const Profile = () => {
               />
             </div>
 
-            {/* ===============================================
-                Interests
-            =============================================== */}
+            {/* ======================================= */}
+            {/* INTERESTS MULTI SELECT */}
+            {/* ======================================= */}
 
-            <div>
-              <label className="block text-sm font-bold !text-black mb-1">
-                Interests
-              </label>
+            <MultiSelectDropdown
+              label="Interests"
+              options={interestOptions}
+              selected={formData.interests}
+              placeholder="Select your interests"
+              accent="#E7B84B"
+              onChange={(selected) =>
+                setFormData((prev) => ({
+                  ...prev,
 
-              <p className="text-xs text-gray-400 mb-2">
-                Separate each interest with a comma
-              </p>
+                  interests: selected,
+                }))
+              }
+            />
 
-              <input
-                type="text"
-                name="interests"
-                value={formData.interests}
-                onChange={handleChange}
-                placeholder="music, films, coding, books"
-                className="
-                  w-full
-                  bg-[#F6FFEA]/50
-                  border
-                  border-gray-200
-                  rounded-2xl
-                  px-4
-                  py-3
-                  !text-black
-                  placeholder:text-gray-400
-                  outline-none
-                  focus:border-[#FA855A]
-                  focus:ring-2
-                  focus:ring-[#FA855A]/15
-                  transition
-                "
-              />
-            </div>
+            {/* ======================================= */}
+            {/* SKILLS MULTI SELECT */}
+            {/* ======================================= */}
 
-            {/* ===============================================
-                Skills
-            =============================================== */}
+            <MultiSelectDropdown
+              label="Skills"
+              options={skillOptions}
+              selected={formData.skills}
+              placeholder="Select your skills"
+              accent="#62C4DA"
+              onChange={(selected) =>
+                setFormData((prev) => ({
+                  ...prev,
 
-            <div>
-              <label className="block text-sm font-bold !text-black mb-1">
-                Skills
-              </label>
+                  skills: selected,
+                }))
+              }
+            />
 
-              <p className="text-xs text-gray-400 mb-2">
-                Separate each skill with a comma
-              </p>
+            {/* ======================================= */}
+            {/* HERE FOR MULTI SELECT */}
+            {/* ======================================= */}
 
-              <input
-                type="text"
-                name="skills"
-                value={formData.skills}
-                onChange={handleChange}
-                placeholder="React, Node.js, Python"
-                className="
-                  w-full
-                  bg-[#F6FFEA]/50
-                  border
-                  border-gray-200
-                  rounded-2xl
-                  px-4
-                  py-3
-                  !text-black
-                  placeholder:text-gray-400
-                  outline-none
-                  focus:border-[#FA855A]
-                  focus:ring-2
-                  focus:ring-[#FA855A]/15
-                  transition
-                "
-              />
-            </div>
+            <MultiSelectDropdown
+              label="Here For"
+              options={friendshipGoalOptions}
+              selected={formData.friendshipGoals}
+              placeholder="Select what you're here for"
+              accent="#FA855A"
+              onChange={(selected) =>
+                setFormData((prev) => ({
+                  ...prev,
 
-            {/* ===============================================
-                Friendship Goals
-            =============================================== */}
+                  friendshipGoals: selected,
+                }))
+              }
+            />
 
-            <div>
-              <label className="block text-sm font-bold !text-black mb-1">
-                Here For
-              </label>
-
-              <p className="text-xs text-gray-400 mb-2">
-                Separate each goal with a comma
-              </p>
-
-              <input
-                type="text"
-                name="friendshipGoals"
-                value={formData.friendshipGoals}
-                onChange={handleChange}
-                placeholder="study partner, project partner, new friends"
-                className="
-                  w-full
-                  bg-[#F6FFEA]/50
-                  border
-                  border-gray-200
-                  rounded-2xl
-                  px-4
-                  py-3
-                  !text-black
-                  placeholder:text-gray-400
-                  outline-none
-                  focus:border-[#FA855A]
-                  focus:ring-2
-                  focus:ring-[#FA855A]/15
-                  transition
-                "
-              />
-            </div>
-
-            {/* ===============================================
-                Buttons
-            =============================================== */}
+            {/* ======================================= */}
+            {/* BUTTONS */}
+            {/* ======================================= */}
 
             <div className="flex flex-col sm:flex-row gap-3 pt-4">
-              {/* Cancel */}
-
               <button
                 type="button"
                 onClick={handleCancel}
-                disabled={loading}
                 className="
                   sm:w-1/3
                   bg-gray-100
-                  !text-black
+                  text-gray-700
                   py-3
                   rounded-2xl
                   font-bold
                   hover:bg-gray-200
                   transition
-                  disabled:opacity-50
                 "
               >
                 Cancel
               </button>
 
-              {/* Update Profile */}
-
               <button
                 type="submit"
-                disabled={loading || uploadingImage}
+                disabled={loading}
                 className="
                   sm:w-2/3
                   bg-[#C93638]
@@ -1193,7 +1528,7 @@ const Profile = () => {
                   disabled:cursor-not-allowed
                 "
               >
-                {loading ? "Updating..." : "Update Profile"}
+                {loading ? "Saving..." : "Save Changes"}
               </button>
             </div>
           </form>
