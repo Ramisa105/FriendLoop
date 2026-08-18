@@ -1,7 +1,9 @@
+import { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
+import LogoMark from "./components/LogoMark";
 
 import Landing from "./pages/Landing";      // Public home page
 import Login from "./pages/Login";
@@ -10,35 +12,58 @@ import Discover from "./pages/Discover";    // The swipe page (old Home)
 import Profile from "./pages/Profile";
 
 function App() {
+  const [showIntro, setShowIntro] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowIntro(false);
+    }, 2200);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <AuthProvider>
       <BrowserRouter>
-        <Navbar />
-        <div className="min-h-screen bg-[#FDF6F0]">
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<Landing />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+        {showIntro && (
+          <div className="splash-screen fixed inset-0 z-50 flex items-center justify-center overflow-hidden">
+            <div className="splash-burst absolute inset-0" />
+            <div className="splash-glow splash-glow-one" />
+            <div className="splash-glow splash-glow-two" />
+            <div className="splash-ring" />
+            <div className="splash-sparkles" />
+            <LogoMark className="splash-logo" />
+          </div>
+        )}
 
-            {/* Protected Routes */}
-            <Route
-              path="/discover"
-              element={
-                <ProtectedRoute>
-                  <Discover />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/profile"
-              element={
-                <ProtectedRoute>
-                  <Profile />
-                </ProtectedRoute>
-              }
-            />
-          </Routes>
+        <div className={showIntro ? "opacity-0" : "opacity-100 animate-fade-in-app"}>
+          <Navbar />
+          <div className="min-h-screen bg-[#FDF6F0]">
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/" element={<Landing />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+
+              {/* Protected Routes */}
+              <Route
+                path="/discover"
+                element={
+                  <ProtectedRoute>
+                    <Discover />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <Profile />
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
+          </div>
         </div>
       </BrowserRouter>
     </AuthProvider>
