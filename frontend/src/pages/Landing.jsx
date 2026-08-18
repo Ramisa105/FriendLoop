@@ -9,11 +9,13 @@ const Landing = () => {
       {/* Hero Section */}
       <section className="max-w-6xl mx-auto px-6 pt-16 pb-20 text-center">
         <h1 className="text-4xl md:text-5xl font-bold text-[#5C3A21] leading-tight">
-          Find Your Next <span className="text-[#E07A3D]">Friend</span> at University
+          Find Your Next <span className="text-[#E07A3D]">Friend</span> at
+          University
         </h1>
         <p className="mt-6 text-lg text-[#8B5E3C] max-w-2xl mx-auto">
-          FriendLoop helps university students connect with study partners, project teammates,
-          and people who share the same interests — in a safe and friendly way.
+          FriendLoop helps university students connect with study partners,
+          project teammates, and people who share the same interests — in a safe
+          and friendly way.
         </p>
 
         <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
@@ -54,7 +56,9 @@ const Landing = () => {
             <div className="w-12 h-12 bg-[#FDF0E6] rounded-full flex items-center justify-center text-2xl mb-4">
               🎓
             </div>
-            <h3 className="text-xl font-semibold text-[#5C3A21] mb-2">Campus Focused</h3>
+            <h3 className="text-xl font-semibold text-[#5C3A21] mb-2">
+              Campus Focused
+            </h3>
             <p className="text-[#8B5E3C]">
               Connect only with students from your university and department.
             </p>
@@ -64,9 +68,12 @@ const Landing = () => {
             <div className="w-12 h-12 bg-[#FDF0E6] rounded-full flex items-center justify-center text-2xl mb-4">
               🤝
             </div>
-            <h3 className="text-xl font-semibold text-[#5C3A21] mb-2">Friendship First</h3>
+            <h3 className="text-xl font-semibold text-[#5C3A21] mb-2">
+              Friendship First
+            </h3>
             <p className="text-[#8B5E3C]">
-              Built for study partners, project teammates and genuine friendships — not dating.
+              Built for study partners, project teammates and genuine
+              friendships — not dating.
             </p>
           </div>
 
@@ -74,7 +81,9 @@ const Landing = () => {
             <div className="w-12 h-12 bg-[#FDF0E6] rounded-full flex items-center justify-center text-2xl mb-4">
               🔒
             </div>
-            <h3 className="text-xl font-semibold text-[#5C3A21] mb-2">Safe & Simple</h3>
+            <h3 className="text-xl font-semibold text-[#5C3A21] mb-2">
+              Safe & Simple
+            </h3>
             <p className="text-[#8B5E3C]">
               Mutual matching, block & report features keep the community safe.
             </p>
@@ -85,27 +94,38 @@ const Landing = () => {
       {/* How it works */}
       <section className="bg-white py-16">
         <div className="max-w-4xl mx-auto px-6 text-center">
-          <h2 className="text-3xl font-bold text-[#5C3A21] mb-10">How It Works</h2>
+          <h2 className="text-3xl font-bold text-[#5C3A21] mb-10">
+            How It Works
+          </h2>
           <div className="grid md:grid-cols-3 gap-8 text-left">
             <div>
               <div className="text-3xl font-bold text-[#E07A3D] mb-2">1</div>
-              <h3 className="font-semibold text-[#5C3A21] mb-1">Create Profile</h3>
+              <h3 className="font-semibold text-[#5C3A21] mb-1">
+                Create Profile
+              </h3>
               <p className="text-[#8B5E3C] text-sm">
-                Add your department, interests, skills and what you’re looking for.
+                Add your department, interests, skills and what you’re looking
+                for.
               </p>
             </div>
             <div>
               <div className="text-3xl font-bold text-[#E07A3D] mb-2">2</div>
-              <h3 className="font-semibold text-[#5C3A21] mb-1">Swipe & Match</h3>
+              <h3 className="font-semibold text-[#5C3A21] mb-1">
+                Swipe & Match
+              </h3>
               <p className="text-[#8B5E3C] text-sm">
-                Like people you want to connect with. Match only happens when both like each other.
+                Like people you want to connect with. Match only happens when
+                both like each other.
               </p>
             </div>
             <div>
               <div className="text-3xl font-bold text-[#E07A3D] mb-2">3</div>
-              <h3 className="font-semibold text-[#5C3A21] mb-1">Start Chatting</h3>
+              <h3 className="font-semibold text-[#5C3A21] mb-1">
+                Start Chatting
+              </h3>
               <p className="text-[#8B5E3C] text-sm">
-                Once matched, you can message and start building real connections.
+                Once matched, you can message and start building real
+                connections.
               </p>
             </div>
           </div>

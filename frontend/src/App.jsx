@@ -3,11 +3,12 @@ import { AuthProvider } from "./context/AuthContext";
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
 
-import Landing from "./pages/Landing";      // Public home page
+import Landing from "./pages/Landing"; // Public home page
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import Discover from "./pages/Discover";    // The swipe page (old Home)
+import Discover from "./pages/Discover"; // The swipe page (old Home)
 import Profile from "./pages/Profile";
+import Admin from "./pages/Admin";
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route path="/admin" element={<Admin />} />
             <Route
               path="/profile"
               element={
