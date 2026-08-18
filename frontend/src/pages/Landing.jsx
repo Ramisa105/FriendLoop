@@ -4,148 +4,294 @@ import { useAuth } from "../context/AuthContext";
 const Landing = () => {
   const { user } = useAuth();
 
-  return (
-    <div className="min-h-screen bg-[#FDF6F0]">
-      {/* Hero Section */}
-      <section className="max-w-6xl mx-auto px-6 pt-16 pb-20 text-center">
-        <h1 className="text-4xl md:text-5xl font-bold text-[#5C3A21] leading-tight">
-          Find Your Next <span className="text-[#E07A3D]">Friend</span> at
-          University
-        </h1>
-        <p className="mt-6 text-lg text-[#8B5E3C] max-w-2xl mx-auto">
-          FriendLoop helps university students connect with study partners,
-          project teammates, and people who share the same interests — in a safe
-          and friendly way.
-        </p>
+  const features = [
+    {
+      emoji: "🎓",
+      title: "Campus Focused",
+      text: "Connect only with students from your university and department.",
+    },
+    {
+      emoji: "🤝",
+      title: "Friendship First",
+      text: "Built for study partners, project teammates and genuine friendships — not dating.",
+    },
+    {
+      emoji: "🔒",
+      title: "Safe & Simple",
+      text: "Mutual matching, block & report features keep the community safe.",
+    },
+  ];
 
-        <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
-          {user ? (
-            <Link
-              to="/discover"
-              className="px-8 py-3 bg-[#E07A3D] text-white rounded-full font-medium text-lg hover:bg-[#C45C26] transition"
+  const steps = [
+    {
+      n: "1",
+      title: "Create Profile",
+      text: "Add your department, interests, skills and what you’re looking for.",
+    },
+    {
+      n: "2",
+      title: "Swipe & Match",
+      text: "Like people you want to connect with. Match only happens when both like each other.",
+    },
+    {
+      n: "3",
+      title: "Start Chatting",
+      text: "Once matched, you can message and start building real connections.",
+    },
+  ];
+
+  const trustPoints = [
+    { emoji: "🎓", label: "University verified" },
+    { emoji: "🆓", label: "Free to join" },
+    { emoji: "🛡️", label: "Moderated community" },
+  ];
+
+  const swipeCards = [
+    {
+      image:
+        "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=900&q=80",
+      name: "Maya, 20",
+      dept: "Fine Arts",
+      tags: ["Sketching", "Coffee"],
+    },
+    {
+      image:
+        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=900&q=80",
+      name: "Leo, 21",
+      dept: "Computer Science",
+      tags: ["Hackathons", "Chess"],
+    },
+    {
+      image:
+        "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=900&q=80",
+      name: "Sara, 19",
+      dept: "Music",
+      tags: ["Guitar", "Study group"],
+    },
+  ];
+
+  return (
+    <div className="min-h-screen bg-[#FDF6F0] overflow-x-hidden">
+      {/* Hero Section */}
+      <section className="relative overflow-hidden">
+        <div className="hero-orb hero-orb-one pointer-events-none absolute" />
+        <div className="hero-orb hero-orb-two pointer-events-none absolute" />
+
+        <div className="relative max-w-6xl mx-auto px-6 pt-16 pb-20 grid lg:grid-cols-2 gap-16 items-center">
+          {/* Left: copy + CTAs */}
+          <div className="text-center lg:text-left gap-6">
+            <span className="animate-fade-in-up inline-block px-4 py-1.5 rounded-full bg-[#FDF0E6] text-[#C45C26] text-sm font-medium mb-6">
+              Built exclusively for university students
+            </span>
+
+            <h1 className="animate-fade-in-up text-4xl md:text-5xl font-bold text-[#5C3A21] leading-tight">
+              Find Your Next <span className="text-[#E07A3D]">Friend</span> at University
+            </h1>
+
+            <p
+              className="animate-fade-in-up mt-6 text-lg text-[#8B5E3C] max-w-md mx-auto lg:mx-0"
+              style={{ animationDelay: "0.1s" }}
             >
-              Start Discovering
-            </Link>
-          ) : (
-            <>
-              <Link
-                to="/register"
-                className="px-8 py-3 bg-[#E07A3D] text-white rounded-full font-medium text-lg hover:bg-[#C45C26] transition"
-              >
-                Get Started
-              </Link>
-              <Link
-                to="/login"
-                className="px-8 py-3 border-2 border-[#E07A3D] text-[#E07A3D] rounded-full font-medium text-lg hover:bg-[#FFF5EB] transition"
-              >
-                Login
-              </Link>
-            </>
-          )}
+              FriendLoop helps university students connect with study partners, project teammates,
+              and people who share the same interests — in a safe and friendly way.
+            </p>
+
+            <div
+              className="animate-fade-in-up mt-9 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
+              style={{ animationDelay: "0.2s" }}
+            >
+              {user ? (
+                <Link
+                  to="/discover"
+                  className="px-8 py-3 bg-[#E07A3D] text-white rounded-full font-medium text-lg transition-all duration-200 hover:bg-[#C45C26] hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0"
+                >
+                  Start Discovering
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    to="/register"
+                    className="px-8 py-3 bg-[#E07A3D] text-white rounded-full font-medium text-lg transition-all duration-200 hover:bg-[#C45C26] hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0"
+                  >
+                    Get Started
+                  </Link>
+                  <Link
+                    to="/login"
+                    className="px-8 py-3 border-2 border-[#E07A3D] text-[#E07A3D] rounded-full font-medium text-lg transition-all duration-200 hover:bg-[#FFF5EB] hover:-translate-y-0.5 active:translate-y-0"
+                  >
+                    Login
+                  </Link>
+                </>
+              )}
+            </div>
+
+            <div
+              className="animate-fade-in-up mt-10 flex flex-wrap justify-center lg:justify-start gap-x-6 gap-y-2"
+              style={{ animationDelay: "0.3s" }}
+            >
+              {trustPoints.map((t) => (
+                <span key={t.label} className="flex items-center gap-1.5 text-sm text-[#8B5E3C]">
+                  <span aria-hidden="true">{t.emoji}</span>
+                  {t.label}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Right: Tinder-style swipe card stack */}
+          <div className="animate-scale-in relative h-[420px] sm:h-[460px] max-w-sm mx-auto w-full">
+            {swipeCards.map((card, i) => {
+              const depth = swipeCards.length - 1 - i;
+              const rotate = depth === 0 ? 0 : depth === 1 ? -6 : 5;
+              const translate = depth * 10;
+              return (
+                <div
+                  key={card.name}
+                  className="profile-card absolute inset-0 rounded-3xl bg-white border border-[#F0E0D0] shadow-lg flex flex-col overflow-hidden transition-transform duration-300"
+                  style={{
+                    zIndex: 10 - depth,
+                    "--rotation": `${rotate}deg`,
+                    "--offset": `${translate}px`,
+                    "--card-delay": `${i * 0.45}s`,
+                  }}
+                >
+                  <div className="relative flex-1 bg-gradient-to-br from-[#FDF0E6] to-[#F7DCC4] overflow-hidden">
+                    {card.image ? (
+                      <img
+                        src={card.image}
+                        alt={card.name}
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-7xl">{card.emoji}</div>
+                    )}
+                    <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#5C3A21]/25 to-transparent" />
+                  </div>
+                  <div className="p-5">
+                    <p className="text-lg font-semibold text-[#5C3A21]">{card.name}</p>
+                    <p className="text-sm text-[#8B5E3C] mb-3">{card.dept}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {card.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="text-xs font-medium px-2.5 py-1 rounded-full bg-[#FDF0E6] text-[#C45C26]"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Floating like / pass action buttons, Tinder-style */}
+            <div className="hero-badge animate-float-slow absolute -left-5 top-10 w-14 h-14 rounded-full bg-white shadow-lg border border-[#F0E0D0] flex items-center justify-center text-2xl z-20">
+              ✕
+            </div>
+            <div className="hero-badge animate-float-slower absolute -right-5 bottom-16 w-16 h-16 rounded-full bg-[#E07A3D] shadow-lg flex items-center justify-center text-2xl z-20">
+              ❤️
+            </div>
+          </div>
         </div>
       </section>
 
       {/* Features */}
-      <section className="max-w-6xl mx-auto px-6 py-16">
-        <h2 className="text-3xl font-bold text-center text-[#5C3A21] mb-12">
-          Why FriendLoop?
-        </h2>
+      <section className="max-w-6xl mx-auto px-6 py-18">
+        <div className="text-center mb-16 flex flex-col items-center gap-4">
+          <h2 className="animate-fade-in-up text-3xl font-bold text-[#5C3A21]">Why FriendLoop?</h2>
+          <p
+            className="animate-fade-in-up mt-4 text-center text-[#8B5E3C] max-w-2xl mx-auto leading-relaxed block"
+            style={{ animationDelay: "0.1s" }}
+          >
+            Everything about FriendLoop is designed around one goal: real connections on your campus.
+          </p>
+        </div>
 
         <div className="grid md:grid-cols-3 gap-8">
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-[#F0E0D0]">
-            <div className="w-12 h-12 bg-[#FDF0E6] rounded-full flex items-center justify-center text-2xl mb-4">
-              🎓
+          {features.map((f, i) => (
+            <div
+              key={f.title}
+              className="animate-fade-in-up flex flex-col bg-white p-6 rounded-2xl shadow-sm border border-[#F0E0D0] transition-all duration-300 hover:shadow-lg hover:-translate-y-1.5 hover:border-[#E07A3D]/30"
+              style={{ animationDelay: `${i * 0.12}s` }}
+            >
+              <div className="w-12 h-12 bg-[#FDF0E6] rounded-full flex items-center justify-center text-2xl mb-4 transition-transform duration-300 hover:scale-110 hover:rotate-6">
+                {f.emoji}
+              </div>
+              <h3 className="text-xl font-semibold text-[#5C3A21] mb-2">{f.title}</h3>
+              <p className="text-[#8B5E3C] leading-relaxed">{f.text}</p>
             </div>
-            <h3 className="text-xl font-semibold text-[#5C3A21] mb-2">
-              Campus Focused
-            </h3>
-            <p className="text-[#8B5E3C]">
-              Connect only with students from your university and department.
-            </p>
-          </div>
-
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-[#F0E0D0]">
-            <div className="w-12 h-12 bg-[#FDF0E6] rounded-full flex items-center justify-center text-2xl mb-4">
-              🤝
-            </div>
-            <h3 className="text-xl font-semibold text-[#5C3A21] mb-2">
-              Friendship First
-            </h3>
-            <p className="text-[#8B5E3C]">
-              Built for study partners, project teammates and genuine
-              friendships — not dating.
-            </p>
-          </div>
-
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-[#F0E0D0]">
-            <div className="w-12 h-12 bg-[#FDF0E6] rounded-full flex items-center justify-center text-2xl mb-4">
-              🔒
-            </div>
-            <h3 className="text-xl font-semibold text-[#5C3A21] mb-2">
-              Safe & Simple
-            </h3>
-            <p className="text-[#8B5E3C]">
-              Mutual matching, block & report features keep the community safe.
-            </p>
-          </div>
+          ))}
         </div>
       </section>
 
       {/* How it works */}
-      <section className="bg-white py-16">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <h2 className="text-3xl font-bold text-[#5C3A21] mb-10">
+      <section className="bg-white py-18">
+        <div className="max-w-4xl mx-auto px-6 text-center gap-8 flex flex-col items-center">
+          <h2 className="animate-fade-in-up text-3xl font-bold gap-4 text-[#5C3A21] mb-16">
             How It Works
           </h2>
-          <div className="grid md:grid-cols-3 gap-8 text-left">
-            <div>
-              <div className="text-3xl font-bold text-[#E07A3D] mb-2">1</div>
-              <h3 className="font-semibold text-[#5C3A21] mb-1">
-                Create Profile
-              </h3>
-              <p className="text-[#8B5E3C] text-sm">
-                Add your department, interests, skills and what you’re looking
-                for.
-              </p>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-[#E07A3D] mb-2">2</div>
-              <h3 className="font-semibold text-[#5C3A21] mb-1">
-                Swipe & Match
-              </h3>
-              <p className="text-[#8B5E3C] text-sm">
-                Like people you want to connect with. Match only happens when
-                both like each other.
-              </p>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-[#E07A3D] mb-2">3</div>
-              <h3 className="font-semibold text-[#5C3A21] mb-1">
-                Start Chatting
-              </h3>
-              <p className="text-[#8B5E3C] text-sm">
-                Once matched, you can message and start building real
-                connections.
-              </p>
-            </div>
+
+          <div className="relative grid md:grid-cols-3 gap-20 md:gap-20 text-center">
+            <div
+              className="hidden md:block absolute top-6 left-[16.67%] right-[16.67%] h-0.5 bg-[#F0E0D0]"
+              aria-hidden="true"
+            />
+            {steps.map((s, i) => (
+              <div
+                key={s.n}
+                className="animate-fade-in-up relative group flex flex-col items-center"
+                style={{ animationDelay: `${i * 0.12}s` }}
+              >
+                <div className="step-bubble relative z-10 w-12 h-12 rounded-full bg-[#E07A3D] text-white flex items-center justify-center text-lg font-bold mb-4 transition-transform duration-300 group-hover:scale-110 group-hover:-translate-y-0.5 shadow-sm">
+                  {s.n}
+                </div>
+                <h3 className="font-semibold text-[#5C3A21] mb-1.5">{s.title}</h3>
+                <p className="text-[#8B5E3C] text-sm leading-relaxed max-w-[220px]">{s.text}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
+    
+
       {/* CTA */}
-      <section className="py-20 text-center">
-        <h2 className="text-3xl font-bold text-[#5C3A21] mb-6">
-          Ready to find your people?
-        </h2>
-        {!user && (
-          <Link
-            to="/register"
-            className="inline-block px-10 py-3.5 bg-[#E07A3D] text-white rounded-full font-medium text-lg hover:bg-[#C45C26] transition"
+      <section className="relative overflow-hidden py-15 text-center bg-gradient-to-br from-[#E07A3D] via-[#D9713A] to-[#C45C26]">
+        <div className="cta-orb pointer-events-none absolute -top-10 -left-10 w-64 h-64 rounded-full bg-white/10" />
+        <div className="cta-orb pointer-events-none absolute -bottom-16 -right-10 w-72 h-72 rounded-full bg-white/10" />
+
+        <div className="relative max-w-2xl mx-auto px-6 gap-8 flex flex-col items-center">
+          <h2 className="animate-fade-in-up text-3xl font-bold text-white mb-4">
+            Ready to find your people?
+          </h2>
+          <p
+            className="animate-fade-in-up text-white/100 mb-20"
+            style={{ animationDelay: "0.2s" }}
           >
-            Join FriendLoop Now
-          </Link>
-        )}
+            Join a growing community of students building real friendships on campus.
+          </p>
+          {!user && (
+            <Link
+              to="/register"
+              className="animate-fade-in-up inline-block px-10 py-3.5 bg-white text-[#C45C26] rounded-full font-semibold text-lg transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
+              style={{ animationDelay: "0.2s" }}
+            >
+              Join FriendLoop Now
+            </Link>
+          )}
+        </div>
       </section>
+
+      {/* Footer */}
+      <footer className="bg-[#FDF6F0] border-t border-[#F0E0D0] py-8">
+        <div className="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p className="text-lg font-bold text-[#E07A3D]">FriendLoop</p>
+          <p className="text-sm text-[#8B5E3C]">
+            &copy; {new Date().getFullYear()} FriendLoop. Built for real campus connections.
+          </p>
+        </div>
+      </footer>
     </div>
   );
 };
