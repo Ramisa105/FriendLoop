@@ -10,7 +10,9 @@ router.post("/", auth, async (req, res) => {
     const { reportedUser, reason, description } = req.body;
 
     if (!reportedUser || !reason) {
-      return res.status(400).json({ message: "reportedUser and reason are required" });
+      return res
+        .status(400)
+        .json({ message: "reportedUser and reason are required" });
     }
 
     // Prevent reporting yourself
@@ -71,7 +73,7 @@ router.put("/:id", auth, async (req, res) => {
     const report = await Report.findByIdAndUpdate(
       req.params.id,
       { status },
-      { new: true }
+      { new: true },
     )
       .populate("reportedBy", "name email")
       .populate("reportedUser", "name email");
@@ -83,6 +85,81 @@ router.put("/:id", auth, async (req, res) => {
     res.json(report);
   } catch (err) {
     res.status(500).json({ message: err.message });
+  }
+});
+
+// Admin: Decide what to do with reported account
+router.put("/:id/action", auth, async (req, res) => {
+  try {
+    // Check admin
+    const currentUser = await User.findById(req.user.id);
+
+    if (!currentUser || !currentUser.isAdmin) {
+      return res.status(403).json({
+        message: "Admin only",
+      });
+    }
+
+    const { action } = req.body;
+
+    if (!["keep", "suspend"].includes(action)) {
+      return res.status(400).json({
+        message: "Invalid action",
+      });
+    }
+
+    // Find report
+    const report = await Report.findById(req.params.id);
+
+    if (!report) {
+      return res.status(404).json({
+        message: "Report not found",
+      });
+    }
+
+    // Find reported user
+    const reportedUser = await User.findById(report.reportedUser);
+
+    if (!reportedUser) {
+      return res.status(404).json({
+        message: "Reported user not found",
+      });
+    }
+
+    // -----------------------------------
+    // KEEP ACCOUNT
+    // -----------------------------------
+
+    if (action === "keep") {
+      reportedUser.isSuspended = false;
+
+      report.status = "resolved";
+      report.actionTaken = "kept";
+    }
+
+    // -----------------------------------
+    // SUSPEND ACCOUNT
+    // -----------------------------------
+
+    if (action === "suspend") {
+      reportedUser.isSuspended = true;
+
+      report.status = "resolved";
+      report.actionTaken = "suspended";
+    }
+
+    await reportedUser.save();
+    await report.save();
+
+    const populatedReport = await Report.findById(report._id)
+      .populate("reportedBy", "name email")
+      .populate("reportedUser", "name email isSuspended");
+
+    res.json(populatedReport);
+  } catch (err) {
+    res.status(500).json({
+      message: err.message,
+    });
   }
 });
 
