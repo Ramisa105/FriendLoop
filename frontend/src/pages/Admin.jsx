@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import API from "../api/axios";
 
 const Admin = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
 
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -81,6 +81,18 @@ const Admin = () => {
       setError(err.response?.data?.message || "Failed to perform action");
     }
   };
+
+  // =========================================
+  // WAIT FOR AUTH TO RESOLVE BEFORE DECIDING
+  // =========================================
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-[#F6FFEA] flex items-center justify-center">
+        <p className="text-gray-600 font-medium">Loading...</p>
+      </div>
+    );
+  }
 
   // =========================================
   // ONLY ADMIN
