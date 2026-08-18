@@ -17,10 +17,15 @@ const Login = () => {
     setLoading(true);
 
     try {
-      await login(email, password);
-      navigate("/");
+      const loggedInUser = await login(email, password);
+
+      if (loggedInUser.isAdmin) {
+        navigate("/admin");
+      } else {
+        navigate("/discover");
+      }
     } catch (err) {
-      setError(err.response?.data?.message || "Login failed");
+      setError(err.response?.data?.message || "Invalid email or password");
     } finally {
       setLoading(false);
     }
@@ -75,7 +80,10 @@ const Login = () => {
 
         <p className="text-center text-sm mt-6">
           Don't have an account?{" "}
-          <Link to="/register" className="text-indigo-600 font-medium hover:underline">
+          <Link
+            to="/register"
+            className="text-indigo-600 font-medium hover:underline"
+          >
             Register
           </Link>
         </p>

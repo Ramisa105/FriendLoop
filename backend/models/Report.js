@@ -26,8 +26,13 @@ const reportSchema = new mongoose.Schema(
       enum: ["pending", "reviewed", "resolved"],
       default: "pending",
     },
+    actionTaken: {
+      type: String,
+      enum: ["none", "kept", "suspended"],
+      default: "none",
+    },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 module.exports = mongoose.model("Report", reportSchema);
