@@ -1,6 +1,8 @@
 const express = require("express");
 const User = require("../models/User");
 const auth = require("../middleware/auth");
+const upload = require("../middleware/upload");
+
 const router = express.Router();
 
 // Get current logged-in user profile
@@ -20,7 +22,7 @@ router.put("/me", auth, async (req, res) => {
     const user = await User.findByIdAndUpdate(
       req.user.id,
       { $set: updates },
-      { new: true }
+      { new: true },
     ).select("-password");
     res.json(user);
   } catch (err) {
@@ -47,6 +49,41 @@ router.get("/suggestions", auth, async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+// Upload profile picture
+router.post(
+  "/me/profile-picture",
+  auth,
+  upload.single("profilePic"),
+  async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({
+          message: "Please select an image",
+        });
+      }
+
+      const imagePath = `/uploads/${req.file.filename}`;
+
+      const user = await User.findByIdAndUpdate(
+        req.user.id,
+        {
+          $set: {
+            profilePic: imagePath,
+          },
+        },
+        {
+          new: true,
+        },
+      ).select("-password");
+
+      res.json(user);
+    } catch (err) {
+      res.status(500).json({
+        message: err.message,
+      });
+    }
+  },
+);
 
 // Get single user by ID
 router.get("/:id", auth, async (req, res) => {

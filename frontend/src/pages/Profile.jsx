@@ -1,6 +1,43 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import API from "../api/axios";
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+const getFormDataFromUser = (user) => ({
+  name: user?.name || "",
+  university: user?.university || "",
+  department: user?.department || "",
+  semester: user?.semester || "",
+  bio: user?.bio || "",
+  interests: user?.interests?.join(", ") || "",
+  skills: user?.skills?.join(", ") || "",
+  friendshipGoals: user?.friendshipGoals?.join(", ") || "",
+});
+
+const getProfilePicUrl = (profilePic) => {
+  if (!profilePic) return "";
+
+  // Already a complete URL or base64 image
+  if (
+    profilePic.startsWith("http://") ||
+    profilePic.startsWith("https://") ||
+    profilePic.startsWith("data:")
+  ) {
+    return profilePic;
+  }
+
+  // Image path returned from backend
+  return `http://localhost:5000${
+    profilePic.startsWith("/") ? profilePic : `/${profilePic}`
+  }`;
+};
+
+/* =========================================================
+   PROFILE COMPONENT
+========================================================= */
 
 const Profile = () => {
   const { user, updateUser } = useAuth();
@@ -16,81 +53,188 @@ const Profile = () => {
     interests: "",
     skills: "",
     friendshipGoals: "",
-    profilePic: "",
   });
 
   const [loading, setLoading] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  // Fill form with current user information
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState("");
+
+  /* =========================================================
+     LOAD USER DATA
+  ========================================================= */
+
   useEffect(() => {
-    if (user) {
-      setFormData({
-        name: user.name || "",
-        university: user.university || "",
-        department: user.department || "",
-        semester: user.semester || "",
-        bio: user.bio || "",
-        interests: user.interests?.join(", ") || "",
-        skills: user.skills?.join(", ") || "",
-        friendshipGoals: user.friendshipGoals?.join(", ") || "",
-        profilePic: user.profilePic || "",
-      });
+    /*
+      Do not reset the form while the user is editing.
+
+      This is important because uploading a picture updates
+      the AuthContext user. Without this check, the form would
+      reset and unsaved text changes could disappear.
+    */
+    if (user && !isEditing) {
+      setFormData(getFormDataFromUser(user));
     }
-  }, [user]);
+  }, [user, isEditing]);
+
+  /* Clean up temporary preview URL */
+  useEffect(() => {
+    return () => {
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
+
+  /* =========================================================
+     INPUT CHANGE
+  ========================================================= */
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+
+    setFormData((previousData) => ({
+      ...previousData,
+      [name]: value,
+    }));
   };
 
-  // Reset form back to saved user information
-  const resetForm = () => {
-    if (!user) return;
+  /* =========================================================
+     IMAGE SELECTION
+  ========================================================= */
 
-    setFormData({
-      name: user.name || "",
-      university: user.university || "",
-      department: user.department || "",
-      semester: user.semester || "",
-      bio: user.bio || "",
-      interests: user.interests?.join(", ") || "",
-      skills: user.skills?.join(", ") || "",
-      friendshipGoals: user.friendshipGoals?.join(", ") || "",
-      profilePic: user.profilePic || "",
-    });
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
+
+    if (!file) return;
+
+    setError("");
+    setMessage("");
+
+    // Validate file type
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+
+    if (!allowedTypes.includes(file.type)) {
+      setError("Please choose a JPG, PNG, or WEBP image.");
+      e.target.value = "";
+      return;
+    }
+
+    // Optional 5 MB limit
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Profile picture must be smaller than 5 MB.");
+      e.target.value = "";
+      return;
+    }
+
+    setSelectedImage(file);
+
+    const previewUrl = URL.createObjectURL(file);
+    setImagePreview(previewUrl);
   };
+
+  /* =========================================================
+     UPLOAD PROFILE PICTURE
+     This button only appears inside EDIT PROFILE.
+  ========================================================= */
+
+  const handleImageUpload = async () => {
+    if (!selectedImage) {
+      setError("Please choose a picture first.");
+      return;
+    }
+
+    try {
+      setUploadingImage(true);
+      setError("");
+      setMessage("");
+
+      const imageData = new FormData();
+
+      imageData.append("profilePic", selectedImage);
+
+      const res = await API.post("/users/me/profile-picture", imageData);
+
+      // Update AuthContext so new picture appears everywhere
+      updateUser(res.data);
+
+      setSelectedImage(null);
+      setImagePreview("");
+
+      setMessage("Profile picture uploaded successfully.");
+    } catch (err) {
+      console.error("Profile picture upload error:", err);
+
+      setError(
+        err.response?.data?.message || "Failed to upload profile picture.",
+      );
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  /* =========================================================
+     EDIT PROFILE
+  ========================================================= */
 
   const handleEdit = () => {
-    resetForm();
+    setFormData(getFormDataFromUser(user));
+
+    setSelectedImage(null);
+    setImagePreview("");
+
     setMessage("");
     setError("");
+
     setIsEditing(true);
   };
 
+  /* =========================================================
+     CANCEL EDIT
+  ========================================================= */
+
   const handleCancel = () => {
-    resetForm();
+    setFormData(getFormDataFromUser(user));
+
+    setSelectedImage(null);
+    setImagePreview("");
+
+    setMessage("");
     setError("");
+
     setIsEditing(false);
   };
+
+  /* =========================================================
+     UPDATE PROFILE
+  ========================================================= */
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    setLoading(true);
-    setMessage("");
-    setError("");
-
     try {
+      setLoading(true);
+      setMessage("");
+      setError("");
+
+      /* -----------------------------------------
+         Normal profile fields
+      ----------------------------------------- */
+
       const payload = {
-        name: formData.name,
-        university: formData.university,
-        department: formData.department,
-        semester: formData.semester,
-        bio: formData.bio,
+        name: formData.name.trim(),
+
+        university: formData.university.trim(),
+
+        department: formData.department.trim(),
+
+        semester: formData.semester.trim(),
+
+        bio: formData.bio.trim(),
 
         interests: formData.interests
           .split(",")
@@ -106,22 +250,84 @@ const Profile = () => {
           .split(",")
           .map((item) => item.trim())
           .filter(Boolean),
-
-        profilePic: formData.profilePic,
       };
 
-      const res = await API.put("/users/me", payload);
+      /* -----------------------------------------
+         1. Update normal profile information
+      ----------------------------------------- */
 
-      updateUser(res.data);
+      const profileRes = await API.put("/users/me", payload);
+
+      let updatedUser = profileRes.data;
+
+      /* -----------------------------------------
+         2. If user selected a new picture but did
+            not press Upload Picture separately,
+            upload it here automatically.
+      ----------------------------------------- */
+
+      if (selectedImage) {
+        try {
+          const imageData = new FormData();
+
+          imageData.append("profilePic", selectedImage);
+
+          const imageRes = await API.post(
+            "/users/me/profile-picture",
+            imageData,
+          );
+
+          updatedUser = imageRes.data;
+        } catch (imageError) {
+          /*
+            Profile text was already saved,
+            so keep that updated information.
+          */
+          updateUser(profileRes.data);
+
+          console.error("Profile picture upload error:", imageError);
+
+          setError(
+            imageError.response?.data?.message ||
+              "Profile information was updated, but the picture could not be uploaded.",
+          );
+
+          return;
+        }
+      }
+
+      /* -----------------------------------------
+         3. Update global user state
+      ----------------------------------------- */
+
+      updateUser(updatedUser);
+
+      /* -----------------------------------------
+         4. Clear temporary picture state
+      ----------------------------------------- */
+
+      setSelectedImage(null);
+      setImagePreview("");
+
+      /* -----------------------------------------
+         5. Leave edit screen
+      ----------------------------------------- */
+
+      setIsEditing(false);
 
       setMessage("Profile updated successfully.");
-      setIsEditing(false);
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to update profile");
+      console.error("Update profile error:", err);
+
+      setError(err.response?.data?.message || "Failed to update profile.");
     } finally {
       setLoading(false);
     }
   };
+
+  /* =========================================================
+     LOADING
+  ========================================================= */
 
   if (!user) {
     return (
@@ -131,33 +337,50 @@ const Profile = () => {
     );
   }
 
+  /* =========================================================
+     PAGE
+  ========================================================= */
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#F6FFEA] py-10 px-4">
-      {/* Soft background decoration */}
+      {/* Background decorations */}
+
       <div className="pointer-events-none absolute -top-32 -left-32 w-80 h-80 bg-[#FA855A] opacity-20 blur-3xl rounded-full" />
 
       <div className="pointer-events-none absolute top-40 -right-32 w-80 h-80 bg-[#62C4DA] opacity-20 blur-3xl rounded-full" />
 
       <div className="pointer-events-none absolute bottom-0 left-1/3 w-72 h-72 bg-[#FFDE96] opacity-20 blur-3xl rounded-full" />
 
-      {/* ================================================== */}
-      {/* PROFILE VIEW */}
-      {/* ================================================== */}
+      {/* =====================================================
+          MAIN PROFILE VIEW
+      ====================================================== */}
 
       {!isEditing && (
         <div className="relative z-10 max-w-3xl mx-auto">
           {/* Success Message */}
+
           {message && (
             <div className="mb-5 bg-white border border-[#62C4DA] text-gray-800 font-medium px-5 py-3 rounded-2xl shadow-sm">
               {message}
             </div>
           )}
 
+          {/* Error Message */}
+
+          {error && (
+            <div className="mb-5 bg-red-50 border border-red-200 text-red-700 font-medium px-5 py-3 rounded-2xl">
+              {error}
+            </div>
+          )}
+
           {/* Main Profile Card */}
+
           <div className="bg-white rounded-[34px] overflow-hidden shadow-xl border border-gray-100">
-            {/* Top Header */}
+            {/* ===============================
+                Header
+            =============================== */}
+
             <div className="relative bg-[#FA855A] px-7 pt-8 pb-28">
-              {/* Small decorative shapes */}
               <div className="absolute top-7 right-40 w-8 h-8 bg-[#FFDE96] rotate-12 rounded-lg" />
 
               <div className="absolute bottom-6 left-8 w-16 h-3 bg-[#C93638] rotate-[-4deg] rounded-full opacity-80" />
@@ -167,13 +390,14 @@ const Profile = () => {
               </p>
 
               <button
+                type="button"
                 onClick={handleEdit}
                 className="
                   absolute
                   top-6
                   right-6
                   bg-white
-                  text-gray-900
+                  text-black
                   px-5
                   py-2
                   rounded-full
@@ -188,41 +412,46 @@ const Profile = () => {
               </button>
             </div>
 
-            {/* Profile Picture */}
-            <div className="relative px-7">
-              <div className="-mt-20 relative w-40 h-40">
+            {/* ===============================
+                PROFILE PICTURE
+
+                DISPLAY ONLY.
+                NO choose file here.
+                NO upload button here.
+            =============================== */}
+
+            <div className="px-7">
+              <div className="-mt-16 relative z-10">
                 {user.profilePic ? (
                   <img
-                    src={user.profilePic}
-                    alt="Profile"
+                    src={getProfilePicUrl(user.profilePic)}
+                    alt={user.name}
                     className="
-                      w-40
-                      h-40
-                      rounded-[30px]
+                      w-32
+                      h-32
+                      rounded-[28px]
                       object-cover
-                      border-[6px]
+                      border-4
                       border-white
                       shadow-lg
-                      rotate-[-2deg]
                     "
                   />
                 ) : (
                   <div
                     className="
-                      w-40
-                      h-40
-                      rounded-[30px]
+                      w-32
+                      h-32
+                      rounded-[28px]
                       bg-[#62C4DA]
-                      border-[6px]
+                      border-4
                       border-white
                       shadow-lg
-                      rotate-[-2deg]
                       flex
                       items-center
                       justify-center
                     "
                   >
-                    <span className="text-white text-6xl font-black">
+                    <span className="text-white text-4xl font-black">
                       {user.name?.charAt(0).toUpperCase()}
                     </span>
                   </div>
@@ -230,9 +459,13 @@ const Profile = () => {
               </div>
             </div>
 
-            {/* Profile Content */}
+            {/* ===============================
+                Profile Content
+            =============================== */}
+
             <div className="px-7 pb-8">
               {/* Name + Email */}
+
               <div className="mt-5">
                 <h1 className="text-5xl font-black !text-black leading-none">
                   {user.name}
@@ -241,17 +474,22 @@ const Profile = () => {
                 <p className="mt-3 text-gray-500 font-medium">{user.email}</p>
               </div>
 
-              {/* University info */}
+              {/* University Information */}
+
               <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-3">
+                {/* University */}
+
                 <div className="bg-[#FFDE96] rounded-[22px] px-5 py-4 rotate-[-1deg]">
                   <p className="text-xs uppercase tracking-widest font-bold text-[#C93638]">
                     University
                   </p>
 
-                  <p className="mt-1 font-black text-gray-800 text-lg">
+                  <p className="mt-1 font-black !text-black text-lg">
                     {user.university || "Not added"}
                   </p>
                 </div>
+
+                {/* Department */}
 
                 <div className="bg-[#62C4DA] rounded-[22px] px-5 py-4 rotate-[1deg]">
                   <p className="text-xs uppercase tracking-widest font-bold text-white">
@@ -262,6 +500,8 @@ const Profile = () => {
                     {user.department || "Not added"}
                   </p>
                 </div>
+
+                {/* Semester */}
 
                 <div className="bg-[#FA855A] rounded-[22px] px-5 py-4 rotate-[-1deg]">
                   <p className="text-xs uppercase tracking-widest font-bold text-[#C93638]">
@@ -274,7 +514,10 @@ const Profile = () => {
                 </div>
               </div>
 
-              {/* About Me */}
+              {/* ===============================
+                  About Me
+              =============================== */}
+
               <div className="mt-8 bg-[#F6FFEA]/60 border border-gray-200 rounded-[26px] p-6">
                 <p className="uppercase tracking-[0.2em] text-xs font-black text-[#FA855A] mb-3">
                   About Me
@@ -286,7 +529,10 @@ const Profile = () => {
                 </p>
               </div>
 
-              {/* Interests */}
+              {/* ===============================
+                  Interests
+              =============================== */}
+
               <div className="mt-8">
                 <div className="flex items-center gap-3 mb-4">
                   <h2 className="text-2xl font-black !text-black">Interests</h2>
@@ -298,7 +544,7 @@ const Profile = () => {
                   {user.interests?.length > 0 ? (
                     user.interests.map((interest, index) => (
                       <span
-                        key={index}
+                        key={`${interest}-${index}`}
                         className="
                           px-5
                           py-2
@@ -320,7 +566,10 @@ const Profile = () => {
                 </div>
               </div>
 
-              {/* Skills */}
+              {/* ===============================
+                  Skills
+              =============================== */}
+
               <div className="mt-8">
                 <div className="flex items-center gap-3 mb-4">
                   <h2 className="text-2xl font-black !text-black">Skills</h2>
@@ -332,7 +581,7 @@ const Profile = () => {
                   {user.skills?.length > 0 ? (
                     user.skills.map((skill, index) => (
                       <span
-                        key={index}
+                        key={`${skill}-${index}`}
                         className="
                           px-5
                           py-2
@@ -340,7 +589,7 @@ const Profile = () => {
                           bg-[#F3FBFD]
                           border
                           border-[#62C4DA]
-                          text-gray-800
+                          !text-black
                           font-semibold
                           text-sm
                         "
@@ -354,7 +603,10 @@ const Profile = () => {
                 </div>
               </div>
 
-              {/* Friendship Goals */}
+              {/* ===============================
+                  Friendship Goals
+              =============================== */}
+
               <div className="mt-8">
                 <div className="flex items-center gap-3 mb-4">
                   <h2 className="text-2xl font-black !text-black">Here For</h2>
@@ -366,7 +618,7 @@ const Profile = () => {
                   {user.friendshipGoals?.length > 0 ? (
                     user.friendshipGoals.map((goal, index) => (
                       <span
-                        key={index}
+                        key={`${goal}-${index}`}
                         className="
                           px-5
                           py-2
@@ -374,7 +626,7 @@ const Profile = () => {
                           bg-[#FFF6F2]
                           border
                           border-[#FA855A]
-                          text-gray-800
+                          !text-black
                           font-semibold
                           text-sm
                         "
@@ -390,8 +642,10 @@ const Profile = () => {
                 </div>
               </div>
 
-              {/* Edit Button */}
+              {/* Bottom Edit Button */}
+
               <button
+                type="button"
                 onClick={handleEdit}
                 className="
                   mt-10
@@ -416,13 +670,14 @@ const Profile = () => {
         </div>
       )}
 
-      {/* ================================================== */}
-      {/* EDIT PROFILE */}
-      {/* ================================================== */}
+      {/* =====================================================
+          EDIT PROFILE
+      ====================================================== */}
 
       {isEditing && (
         <div className="relative z-10 max-w-3xl mx-auto">
-          {/* Edit Heading */}
+          {/* Heading */}
+
           <div className="mb-7">
             <p className="uppercase text-[#FA855A] tracking-[0.24em] text-xs font-bold">
               Your profile
@@ -437,14 +692,26 @@ const Profile = () => {
             </p>
           </div>
 
-          {/* Error */}
+          {/* Success Message */}
+
+          {message && (
+            <div className="bg-[#F3FBFD] border border-[#62C4DA] text-gray-800 p-4 rounded-2xl mb-5 font-medium">
+              {message}
+            </div>
+          )}
+
+          {/* Error Message */}
+
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-2xl mb-5 font-medium">
               {error}
             </div>
           )}
 
-          {/* Edit Form */}
+          {/* =================================================
+              Edit Form
+          ================================================= */}
+
           <form
             onSubmit={handleSubmit}
             className="
@@ -458,9 +725,150 @@ const Profile = () => {
               space-y-6
             "
           >
-            {/* Full Name */}
+            {/* ===============================================
+                PROFILE PICTURE UPLOAD
+
+                THIS EXISTS ONLY INSIDE EDIT PROFILE.
+            =============================================== */}
+
             <div>
-              <label className="block text-sm font-bold text-gray-800 mb-2">
+              <label className="block text-sm font-bold !text-black mb-3">
+                Upload Picture
+              </label>
+
+              <div
+                className="
+                  bg-[#F6FFEA]/60
+                  border
+                  border-gray-200
+                  rounded-[24px]
+                  p-5
+                "
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center gap-5">
+                  {/* Image Preview */}
+
+                  <div className="shrink-0">
+                    {imagePreview ? (
+                      <img
+                        src={imagePreview}
+                        alt="New profile preview"
+                        className="
+                          w-28
+                          h-28
+                          rounded-[24px]
+                          object-cover
+                          border-4
+                          border-white
+                          shadow-md
+                        "
+                      />
+                    ) : user.profilePic ? (
+                      <img
+                        src={getProfilePicUrl(user.profilePic)}
+                        alt="Current profile"
+                        className="
+                          w-28
+                          h-28
+                          rounded-[24px]
+                          object-cover
+                          border-4
+                          border-white
+                          shadow-md
+                        "
+                      />
+                    ) : (
+                      <div
+                        className="
+                          w-28
+                          h-28
+                          rounded-[24px]
+                          bg-[#62C4DA]
+                          flex
+                          items-center
+                          justify-center
+                          border-4
+                          border-white
+                          shadow-md
+                        "
+                      >
+                        <span className="text-white text-4xl font-black">
+                          {user.name?.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Choose File + Upload */}
+
+                  <div className="flex-1 w-full">
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp"
+                      onChange={handleImageChange}
+                      className="
+                        block
+                        w-full
+                        text-sm
+                        text-gray-600
+
+                        file:mr-4
+                        file:py-2
+                        file:px-5
+                        file:rounded-full
+                        file:border-0
+                        file:bg-[#FFDE96]
+                        file:text-black
+                        file:font-bold
+
+                        hover:file:bg-[#F7CF78]
+                        cursor-pointer
+                      "
+                    />
+
+                    <p className="text-xs text-gray-400 mt-2">
+                      JPG, PNG or WEBP. Maximum 5 MB.
+                    </p>
+
+                    {selectedImage && (
+                      <>
+                        <p className="text-sm !text-black font-semibold mt-3">
+                          Selected: {selectedImage.name}
+                        </p>
+
+                        <button
+                          type="button"
+                          onClick={handleImageUpload}
+                          disabled={uploadingImage}
+                          className="
+                            mt-3
+                            bg-[#FA855A]
+                            text-white
+                            px-5
+                            py-2.5
+                            rounded-xl
+                            font-bold
+                            hover:bg-[#C93638]
+                            transition
+                            disabled:opacity-50
+                            disabled:cursor-not-allowed
+                          "
+                        >
+                          {uploadingImage ? "Uploading..." : "Upload Picture"}
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* ===============================================
+                Full Name
+            =============================================== */}
+
+            <div>
+              <label className="block text-sm font-bold !text-black mb-2">
                 Full Name
               </label>
 
@@ -478,7 +886,7 @@ const Profile = () => {
                   rounded-2xl
                   px-4
                   py-3
-                  text-gray-800
+                  !text-black
                   outline-none
                   focus:border-[#FA855A]
                   focus:ring-2
@@ -488,11 +896,15 @@ const Profile = () => {
               />
             </div>
 
-            {/* University + Department */}
+            {/* ===============================================
+                University + Department
+            =============================================== */}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               {/* University */}
+
               <div>
-                <label className="block text-sm font-bold text-gray-800 mb-2">
+                <label className="block text-sm font-bold !text-black mb-2">
                   University
                 </label>
 
@@ -510,7 +922,8 @@ const Profile = () => {
                     rounded-2xl
                     px-4
                     py-3
-                    text-gray-800
+                    !text-black
+                    placeholder:text-gray-400
                     outline-none
                     focus:border-[#FA855A]
                     focus:ring-2
@@ -521,8 +934,9 @@ const Profile = () => {
               </div>
 
               {/* Department */}
+
               <div>
-                <label className="block text-sm font-bold text-gray-800 mb-2">
+                <label className="block text-sm font-bold !text-black mb-2">
                   Department
                 </label>
 
@@ -540,7 +954,8 @@ const Profile = () => {
                     rounded-2xl
                     px-4
                     py-3
-                    text-gray-800
+                    !text-black
+                    placeholder:text-gray-400
                     outline-none
                     focus:border-[#FA855A]
                     focus:ring-2
@@ -551,9 +966,12 @@ const Profile = () => {
               </div>
             </div>
 
-            {/* Semester */}
+            {/* ===============================================
+                Semester
+            =============================================== */}
+
             <div>
-              <label className="block text-sm font-bold text-gray-800 mb-2">
+              <label className="block text-sm font-bold !text-black mb-2">
                 Semester
               </label>
 
@@ -571,7 +989,8 @@ const Profile = () => {
                   rounded-2xl
                   px-4
                   py-3
-                  text-gray-800
+                  !text-black
+                  placeholder:text-gray-400
                   outline-none
                   focus:border-[#FA855A]
                   focus:ring-2
@@ -581,9 +1000,12 @@ const Profile = () => {
               />
             </div>
 
-            {/* Bio */}
+            {/* ===============================================
+                Bio
+            =============================================== */}
+
             <div>
-              <label className="block text-sm font-bold text-gray-800 mb-2">
+              <label className="block text-sm font-bold !text-black mb-2">
                 About Me
               </label>
 
@@ -591,7 +1013,7 @@ const Profile = () => {
                 name="bio"
                 value={formData.bio}
                 onChange={handleChange}
-                rows="4"
+                rows={4}
                 placeholder="Tell people a little about yourself..."
                 className="
                   w-full
@@ -601,7 +1023,8 @@ const Profile = () => {
                   rounded-2xl
                   px-4
                   py-3
-                  text-gray-800
+                  !text-black
+                  placeholder:text-gray-400
                   outline-none
                   focus:border-[#FA855A]
                   focus:ring-2
@@ -612,9 +1035,12 @@ const Profile = () => {
               />
             </div>
 
-            {/* Interests */}
+            {/* ===============================================
+                Interests
+            =============================================== */}
+
             <div>
-              <label className="block text-sm font-bold text-gray-800 mb-1">
+              <label className="block text-sm font-bold !text-black mb-1">
                 Interests
               </label>
 
@@ -636,7 +1062,8 @@ const Profile = () => {
                   rounded-2xl
                   px-4
                   py-3
-                  text-gray-800
+                  !text-black
+                  placeholder:text-gray-400
                   outline-none
                   focus:border-[#FA855A]
                   focus:ring-2
@@ -646,9 +1073,12 @@ const Profile = () => {
               />
             </div>
 
-            {/* Skills */}
+            {/* ===============================================
+                Skills
+            =============================================== */}
+
             <div>
-              <label className="block text-sm font-bold text-gray-800 mb-1">
+              <label className="block text-sm font-bold !text-black mb-1">
                 Skills
               </label>
 
@@ -670,7 +1100,8 @@ const Profile = () => {
                   rounded-2xl
                   px-4
                   py-3
-                  text-gray-800
+                  !text-black
+                  placeholder:text-gray-400
                   outline-none
                   focus:border-[#FA855A]
                   focus:ring-2
@@ -680,9 +1111,12 @@ const Profile = () => {
               />
             </div>
 
-            {/* Friendship Goals */}
+            {/* ===============================================
+                Friendship Goals
+            =============================================== */}
+
             <div>
-              <label className="block text-sm font-bold text-gray-800 mb-1">
+              <label className="block text-sm font-bold !text-black mb-1">
                 Here For
               </label>
 
@@ -704,7 +1138,8 @@ const Profile = () => {
                   rounded-2xl
                   px-4
                   py-3
-                  text-gray-800
+                  !text-black
+                  placeholder:text-gray-400
                   outline-none
                   focus:border-[#FA855A]
                   focus:ring-2
@@ -714,79 +1149,37 @@ const Profile = () => {
               />
             </div>
 
-            {/* Profile Picture */}
-            <div>
-              <label className="block text-sm font-bold text-gray-800 mb-2">
-                Profile Picture
-              </label>
+            {/* ===============================================
+                Buttons
+            =============================================== */}
 
-              <input
-                type="text"
-                name="profilePic"
-                value={formData.profilePic}
-                onChange={handleChange}
-                placeholder="Paste image URL"
-                className="
-                  w-full
-                  bg-[#F6FFEA]/50
-                  border
-                  border-gray-200
-                  rounded-2xl
-                  px-4
-                  py-3
-                  text-gray-800
-                  outline-none
-                  focus:border-[#FA855A]
-                  focus:ring-2
-                  focus:ring-[#FA855A]/15
-                  transition
-                "
-              />
-
-              {/* Image Preview */}
-              {formData.profilePic && (
-                <img
-                  src={formData.profilePic}
-                  alt="Preview"
-                  className="
-                    mt-5
-                    w-28
-                    h-28
-                    rounded-[24px]
-                    object-cover
-                    border-4
-                    border-white
-                    shadow-md
-                    rotate-[-2deg]
-                  "
-                />
-              )}
-            </div>
-
-            {/* Buttons */}
             <div className="flex flex-col sm:flex-row gap-3 pt-4">
               {/* Cancel */}
+
               <button
                 type="button"
                 onClick={handleCancel}
+                disabled={loading}
                 className="
                   sm:w-1/3
                   bg-gray-100
-                  text-gray-700
+                  !text-black
                   py-3
                   rounded-2xl
                   font-bold
                   hover:bg-gray-200
                   transition
+                  disabled:opacity-50
                 "
               >
                 Cancel
               </button>
 
-              {/* Save */}
+              {/* Update Profile */}
+
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || uploadingImage}
                 className="
                   sm:w-2/3
                   bg-[#C93638]
@@ -800,7 +1193,7 @@ const Profile = () => {
                   disabled:cursor-not-allowed
                 "
               >
-                {loading ? "Saving..." : "Save Changes"}
+                {loading ? "Updating..." : "Update Profile"}
               </button>
             </div>
           </form>
