@@ -5,11 +5,12 @@ import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
 import LogoMark from "./components/LogoMark";
 
-import Landing from "./pages/Landing";      // Public home page
+import Landing from "./pages/Landing"; // Public home page
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import Discover from "./pages/Discover";    // The swipe page (old Home)
+import Discover from "./pages/Discover"; // The swipe page (old Home)
 import Profile from "./pages/Profile";
+import Admin from "./pages/Admin";
 
 function App() {
   const [showIntro, setShowIntro] = useState(true);
