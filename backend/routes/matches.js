@@ -92,13 +92,23 @@ router.get("/", auth, async (req, res) => {
       });
     }
 
+    const usersWhoBlockedCurrentUser = await User.find({
+      blockedUsers: currentUserId,
+    }).distinct("_id");
+    const blockedUserIds = [
+      ...currentUser.blockedUsers,
+      ...usersWhoBlockedCurrentUser,
+    ];
+
     // Find users I liked who also liked me
     const mutualUsers = await User.find({
       _id: {
         $in: currentUser.likes,
+        $nin: blockedUserIds,
       },
 
       likes: currentUserId,
+      blockedUsers: { $nin: [currentUserId] },
 
       isSuspended: {
         $ne: true,
@@ -139,8 +149,15 @@ router.get("/", auth, async (req, res) => {
           (u) => u && u._id.toString() !== currentUserId.toString(),
         );
 
-        // Don't display suspended/deleted users
-        if (!otherUser || otherUser.isSuspended) {
+        // Don't display suspended/deleted/blocked users
+        if (
+          !otherUser ||
+          otherUser.isSuspended ||
+          blockedUserIds.some(
+            (blockedUserId) =>
+              blockedUserId.toString() === otherUser._id.toString(),
+          )
+        ) {
           return null;
         }
 
