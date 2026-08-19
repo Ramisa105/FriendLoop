@@ -2,67 +2,163 @@ const express = require("express");
 const User = require("../models/User");
 const Match = require("../models/Match");
 const auth = require("../middleware/auth");
+
 const router = express.Router();
 
-// Swipe right (like a user)
+// ======================================================
+// LIKE A USER
+// ======================================================
+
 router.post("/like/:id", auth, async (req, res) => {
   try {
     const currentUserId = req.user.id;
     const targetUserId = req.params.id;
 
-    // Add to likes
-    await User.findByIdAndUpdate(currentUserId, {
-      $addToSet: { likes: targetUserId },
-    });
-
-    // Check if the other user already liked me → create match
-    const targetUser = await User.findById(targetUserId);
-    const isMutual = targetUser.likes.some(
-  (id) => id.toString() === currentUserId
-);
-
-    if (isMutual) {
-      // Check if match already exists
-      const existingMatch = await Match.findOne({
-        users: { $all: [currentUserId, targetUserId] },
+    // Prevent liking yourself
+    if (currentUserId.toString() === targetUserId.toString()) {
+      return res.status(400).json({
+        message: "You cannot like yourself",
       });
-
-      if (!existingMatch) {
-        const newMatch = await Match.create({
-          users: [currentUserId, targetUserId],
-        });
-        return res.json({ matched: true, match: newMatch });
-      }
     }
 
-    res.json({ matched: false });
+    const currentUser = await User.findById(currentUserId);
+    const targetUser = await User.findById(targetUserId);
+
+    if (!currentUser || !targetUser) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    // Add target user to my likes
+    await User.findByIdAndUpdate(currentUserId, {
+      $addToSet: {
+        likes: targetUserId,
+      },
+    });
+
+    // Check if target user already liked me
+    const isMutual = targetUser.likes.some(
+      (id) => id.toString() === currentUserId.toString(),
+    );
+
+    // Not a match yet
+    if (!isMutual) {
+      return res.json({
+        matched: false,
+      });
+    }
+
+    // Check if match already exists
+    let match = await Match.findOne({
+      users: {
+        $all: [currentUserId, targetUserId],
+      },
+    });
+
+    // Create match if it doesn't exist
+    if (!match) {
+      match = await Match.create({
+        users: [currentUserId, targetUserId],
+      });
+    }
+
+    return res.json({
+      matched: true,
+      match,
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error("LIKE ERROR:", err);
+
+    res.status(500).json({
+      message: err.message,
+    });
   }
 });
 
-// Get all my matches
+// ======================================================
+// GET ALL MY MATCHES
+// ======================================================
+
 router.get("/", auth, async (req, res) => {
   try {
-    const matches = await Match.find({
-      users: req.user.id,
-    }).populate("users", "name university department profilePic interests");
+    const currentUserId = req.user.id;
 
-    // Return the other user in each match
-    const result = matches.map((match) => {
-      const otherUser = match.users.find(
-        (u) => u._id.toString() !== req.user.id
-      );
-      return {
-        matchId: match._id,
-        user: otherUser,
-        createdAt: match.createdAt,
-      };
+    const currentUser = await User.findById(currentUserId);
+
+    if (!currentUser) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    // Find users I liked who also liked me
+    const mutualUsers = await User.find({
+      _id: {
+        $in: currentUser.likes,
+      },
+
+      likes: currentUserId,
+
+      isSuspended: {
+        $ne: true,
+      },
     });
+
+    // Create any missing Match documents
+    for (const mutualUser of mutualUsers) {
+      const existingMatch = await Match.findOne({
+        users: {
+          $all: [currentUserId, mutualUser._id],
+        },
+      });
+
+      if (!existingMatch) {
+        await Match.create({
+          users: [currentUserId, mutualUser._id],
+        });
+      }
+    }
+
+    // Get all matches
+    const matches = await Match.find({
+      users: currentUserId,
+    })
+      .populate(
+        "users",
+        "name university department semester bio profilePic interests skills friendshipGoals isSuspended",
+      )
+      .sort({
+        createdAt: -1,
+      });
+
+    // Return only the other user
+    const result = matches
+      .map((match) => {
+        const otherUser = match.users.find(
+          (u) => u && u._id.toString() !== currentUserId.toString(),
+        );
+
+        // Don't display suspended/deleted users
+        if (!otherUser || otherUser.isSuspended) {
+          return null;
+        }
+
+        return {
+          matchId: match._id,
+          user: otherUser,
+          createdAt: match.createdAt,
+        };
+      })
+      .filter(Boolean);
 
     res.json(result);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error("GET MATCHES ERROR:", err);
+
+    res.status(500).json({
+      message: err.message,
+    });
   }
 });
 
