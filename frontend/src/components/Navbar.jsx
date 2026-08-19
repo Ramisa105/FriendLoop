@@ -33,6 +33,12 @@ const Navbar = () => {
                 >
                   Discover
                 </Link>
+                <Link
+                  to="/matches"
+                  className="text-[#5C3A21] hover:text-[#E07A3D] font-medium"
+                >
+                  Matches
+                </Link>
 
                 <Link
                   to="/profile"
