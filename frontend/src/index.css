@@ -42,6 +42,26 @@ body {
   background: var(--color-bg);
 }
 
+.chat-messages {
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: #c93638 #fff4e7;
+}
+
+.chat-messages::-webkit-scrollbar {
+  width: 8px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+  background: #fff4e7;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+  background: #c93638;
+  border: 2px solid #fff4e7;
+  border-radius: 999px;
+}
+
 #root {
   min-height: 100svh;
   display: flex;
