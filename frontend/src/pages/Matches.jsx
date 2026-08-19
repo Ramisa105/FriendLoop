@@ -126,7 +126,11 @@ const Matches = () => {
 
                 {/* Message button */}
                 <button
-                  onClick={() => navigate(`/chat/${match.matchId}`)}
+                  onClick={() =>
+                    navigate(`/chat/${match.user?._id}`, {
+                      state: { matchUser: match.user },
+                    })
+                  }
                   className="w-full mt-5 bg-[#C93638] hover:bg-[#FA855A] text-white py-3 rounded-xl font-bold transition"
                 >
                   Message
