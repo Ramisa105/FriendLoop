@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
+import { Navigate } from "react-router-dom";
 import API from "../api/axios";
+import { useAuth } from "../context/AuthContext";
 
 // ======================================================
 // HELPER FUNCTIONS
@@ -35,6 +37,8 @@ const getCommonItems = (first = [], second = []) => {
 // ======================================================
 
 const Discover = () => {
+  const { user, loading: authLoading } = useAuth();
+
   const [suggestions, setSuggestions] = useState([]);
   const [myProfile, setMyProfile] = useState(null);
 
@@ -267,6 +271,24 @@ const Discover = () => {
         previousIndex + 1
     );
   };
+
+  // ======================================================
+  // ADMINS DON'T GET A DISCOVER FEED
+  // ======================================================
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#FDF6F0]">
+        <p className="text-[#8B5E3C] text-lg">
+          Loading...
+        </p>
+      </div>
+    );
+  }
+
+  if (user?.isAdmin) {
+    return <Navigate to="/admin" replace />;
+  }
 
   // ======================================================
   // LOADING

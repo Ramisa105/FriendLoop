@@ -18,12 +18,17 @@ const Login = () => {
     setLoading(true);
 
     try {
-      await login(email, password);
-      navigate("/discover");
+      const user = await login(email, password);
+
+      if (user.isAdmin) {
+        navigate("/admin");
+      } else {
+        navigate("/discover");
+      }
     } catch (err) {
       setError(
         err.response?.data?.message ||
-          "We couldn't log you in. Please check your details and try again."
+          "We couldn't log you in. Please check your details and try again.",
       );
     } finally {
       setLoading(false);
@@ -31,7 +36,10 @@ const Login = () => {
   };
 
   return (
-    <div className="relative h-screen w-full flex overflow-hidden bg-[#FDF6F0]" style={{ height: "100dvh" }}>
+    <div
+      className="relative h-screen w-full flex overflow-hidden bg-[#FDF6F0]"
+      style={{ height: "100dvh" }}
+    >
       <div className="hero-orb hero-orb-one pointer-events-none absolute opacity-60" />
       <div className="hero-orb hero-orb-two pointer-events-none absolute opacity-40" />
 
@@ -86,7 +94,8 @@ const Login = () => {
         </div>
 
         <p className="relative text-sm text-white/70">
-          &copy; {new Date().getFullYear()} FriendLoop. Built for real campus connections.
+          &copy; {new Date().getFullYear()} FriendLoop. Built for real campus
+          connections.
         </p>
       </div>
 
