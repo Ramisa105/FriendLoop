@@ -3,7 +3,7 @@ const http = require("http");
 const { Server } = require("socket.io");
 const cors = require("cors");
 const dotenv = require("dotenv");
-const path = require("path"); // ADD THIS
+const path = require("path");
 const connectDB = require("./config/db");
 
 dotenv.config();
@@ -19,8 +19,9 @@ const io = new Server(server, {
 });
 
 app.use(cors({ origin: CLIENT_URL }));
-app.use(express.json({ limit: "10mb" })); // for profile pictures if base64
-
+app.use(express.json({ limit: "10mb" }));
+// for profile pictures if base64
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 // Routes
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/users", require("./routes/users"));
