@@ -112,9 +112,9 @@ const Chat = () => {
 		}).format(new Date(createdAt));
 
 	return (
-		<main className="min-h-screen bg-[#F6FFEA] px-4 py-8 sm:px-6">
-			<section className="mx-auto flex max-w-3xl flex-col overflow-hidden rounded-[28px] border border-gray-100 bg-white shadow-sm" style={{ minHeight: "calc(100vh - 140px)" }}>
-				<header className="flex items-center gap-4 border-b border-gray-100 bg-white px-5 py-4 sm:px-7">
+		<main className="flex min-h-0 flex-1 overflow-hidden bg-[#F6FFEA] p-3 sm:p-5">
+			<section className="mx-auto flex h-full min-h-0 w-full max-w-3xl flex-col overflow-hidden rounded-[24px] border border-gray-100 bg-white shadow-sm">
+				<header className="flex shrink-0 items-center gap-4 border-b border-gray-100 bg-white px-5 py-4 sm:px-7">
 					<button
 						type="button"
 						onClick={() => navigate("/matches")}
@@ -146,7 +146,7 @@ const Chat = () => {
 
 				{error && <p className="border-b border-red-100 bg-red-50 px-5 py-3 text-sm text-red-700">{error}</p>}
 
-				<div className="flex-1 space-y-3 overflow-y-auto bg-[#FFFCF8] px-5 py-6 sm:px-7">
+				<div className="chat-messages min-h-0 flex-1 space-y-3 overflow-y-scroll bg-[#FFFCF8] px-5 py-5 sm:px-7">
 					{!loading && messages.length === 0 && (
 						<p className="py-12 text-center text-sm text-gray-500">Start the conversation.</p>
 					)}
@@ -168,7 +168,7 @@ const Chat = () => {
 					<div ref={messagesEndRef} />
 				</div>
 
-				<form onSubmit={sendMessage} className="flex gap-3 border-t border-gray-100 bg-white p-4 sm:p-5">
+				<form onSubmit={sendMessage} className="flex shrink-0 gap-3 border-t border-gray-100 bg-white p-4 sm:p-5">
 					<input
 						value={content}
 						onChange={(event) => setContent(event.target.value)}
