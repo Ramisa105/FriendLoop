@@ -111,6 +111,13 @@ const Chat = () => {
 			timeStyle: "short",
 		}).format(new Date(createdAt));
 
+	const handleContentKeyDown = (event) => {
+		if (event.key === "Enter" && !event.shiftKey) {
+			event.preventDefault();
+			sendMessage(event);
+		}
+	};
+
 	return (
 		<main className="flex min-h-0 flex-1 overflow-hidden bg-[#F6FFEA] p-3 sm:p-5">
 			<section className="mx-auto flex h-full min-h-0 w-full max-w-3xl flex-col overflow-hidden rounded-[24px] border border-gray-100 bg-white shadow-sm">
@@ -155,7 +162,7 @@ const Chat = () => {
 						return (
 							<div key={message._id} className={`flex ${ownMessage ? "justify-end" : "justify-start"}`}>
 								<div className={`flex max-w-[80%] flex-col ${ownMessage ? "items-end" : "items-start"}`}>
-									<p className={`rounded-2xl px-4 py-3 text-sm ${ownMessage ? "rounded-br-sm bg-[#C93638] text-white" : "rounded-bl-sm bg-white text-gray-700 shadow-sm"}`}>
+									<p className={`whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm ${ownMessage ? "rounded-br-sm bg-[#C93638] text-white" : "rounded-bl-sm bg-white text-gray-700 shadow-sm"}`}>
 										{message.content}
 									</p>
 									<time dateTime={message.createdAt} className="mt-1 px-1 text-[11px] text-gray-400">
@@ -169,12 +176,14 @@ const Chat = () => {
 				</div>
 
 				<form onSubmit={sendMessage} className="flex shrink-0 gap-3 border-t border-gray-100 bg-white p-4 sm:p-5">
-					<input
+					<textarea
 						value={content}
 						onChange={(event) => setContent(event.target.value)}
+						onKeyDown={handleContentKeyDown}
 						placeholder="Write a message..."
-						className="min-w-0 flex-1 rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-[#FA855A]"
+						className="min-h-[48px] min-w-0 flex-1 resize-none rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-[#FA855A]"
 						maxLength={2000}
+						rows={1}
 					/>
 					<button type="submit" disabled={!content.trim() || sending} className="rounded-xl bg-[#C93638] px-5 py-3 font-bold text-white transition hover:bg-[#FA855A] disabled:cursor-not-allowed disabled:opacity-50">
 						Send
