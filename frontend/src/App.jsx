@@ -28,24 +28,19 @@ function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        {/* Splash Screen */}
+        {/* Splash screen from main */}
         {showIntro && (
           <div className="splash-screen fixed inset-0 z-50 flex items-center justify-center overflow-hidden">
             <div className="splash-burst absolute inset-0" />
-
             <div className="splash-glow splash-glow-one" />
-
             <div className="splash-glow splash-glow-two" />
-
             <div className="splash-ring" />
-
             <div className="splash-sparkles" />
-
             <LogoMark className="splash-logo" />
           </div>
         )}
 
-        {/* Main App */}
+        {/* Main application */}
         <div
           className={
             showIntro ? "opacity-0" : "opacity-100 animate-fade-in-app"
@@ -57,9 +52,7 @@ function App() {
             <Routes>
               {/* Public Routes */}
               <Route path="/" element={<Landing />} />
-
               <Route path="/login" element={<Login />} />
-
               <Route path="/register" element={<Register />} />
 
               {/* Discover */}
