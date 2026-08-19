@@ -34,11 +34,18 @@ router.put("/me", auth, async (req, res) => {
 router.get("/suggestions", auth, async (req, res) => {
   try {
     const currentUser = await User.findById(req.user.id);
+    const usersWhoBlockedCurrentUser = await User.find({
+      blockedUsers: req.user.id,
+    }).distinct("_id");
 
     const users = await User.find({
       _id: {
-        $ne: req.user.id,
-        $nin: [...currentUser.likes, ...currentUser.blockedUsers],
+        $nin: [
+          req.user.id,
+          ...currentUser.likes,
+          ...currentUser.blockedUsers,
+          ...usersWhoBlockedCurrentUser,
+        ],
       },
     }).select("-password");
 
@@ -88,8 +95,17 @@ router.post(
 // Get single user by ID
 router.get("/:id", auth, async (req, res) => {
   try {
-    const user = await User.findById(req.params.id).select("-password");
+    const user = await User.findOne({
+      _id: req.params.id,
+      blockedUsers: { $ne: req.user.id },
+    }).select("-password");
     if (!user) return res.status(404).json({ message: "User not found" });
+
+    const currentUser = await User.findById(req.user.id).select("blockedUsers");
+    if (currentUser.blockedUsers.some((blockedUser) => blockedUser.equals(user._id))) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
     res.json(user);
   } catch (err) {
     res.status(500).json({ message: err.message });

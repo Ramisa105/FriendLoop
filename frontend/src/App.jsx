@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 
 import Navbar from "./components/Navbar";
@@ -13,9 +13,12 @@ import Discover from "./pages/Discover";
 import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
 import Matches from "./pages/Matches";
+import Chat from "./pages/Chat";
 
-function App() {
+function AppContent() {
   const [showIntro, setShowIntro] = useState(true);
+  const location = useLocation();
+  const isChatPage = location.pathname.startsWith("/chat/");
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -26,29 +29,28 @@ function App() {
   }, []);
 
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        {/* Splash screen from main */}
-        {showIntro && (
-          <div className="splash-screen fixed inset-0 z-50 flex items-center justify-center overflow-hidden">
-            <div className="splash-burst absolute inset-0" />
-            <div className="splash-glow splash-glow-one" />
-            <div className="splash-glow splash-glow-two" />
-            <div className="splash-ring" />
-            <div className="splash-sparkles" />
-            <LogoMark className="splash-logo" />
-          </div>
-        )}
+    <>
+      {/* Splash screen from main */}
+      {showIntro && (
+        <div className="splash-screen fixed inset-0 z-50 flex items-center justify-center overflow-hidden">
+          <div className="splash-burst absolute inset-0" />
+          <div className="splash-glow splash-glow-one" />
+          <div className="splash-glow splash-glow-two" />
+          <div className="splash-ring" />
+          <div className="splash-sparkles" />
+          <LogoMark className="splash-logo" />
+        </div>
+      )}
 
         {/* Main application */}
         <div
-          className={
+          className={`${
             showIntro ? "opacity-0" : "opacity-100 animate-fade-in-app"
-          }
+          } ${isChatPage ? "flex h-svh min-h-0 flex-col overflow-hidden" : ""}`}
         >
           <Navbar />
 
-          <div className="min-h-screen bg-[#FDF6F0]">
+          <div className={`${isChatPage ? "flex min-h-0 flex-1 flex-col" : "min-h-screen"} bg-[#FDF6F0]`}>
             <Routes>
               {/* Public Routes */}
               <Route path="/" element={<Landing />} />-
@@ -75,6 +77,16 @@ function App() {
                 }
               />
 
+              {/* Chat */}
+              <Route
+                path="/chat/:userId"
+                element={
+                  <ProtectedRoute>
+                    <Chat />
+                  </ProtectedRoute>
+                }
+              />
+
               {/* Profile */}
               <Route
                 path="/profile"
@@ -97,6 +109,15 @@ function App() {
             </Routes>
           </div>
         </div>
+      </>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <AppContent />
       </BrowserRouter>
     </AuthProvider>
   );
