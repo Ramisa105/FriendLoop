@@ -1,4 +1,5 @@
 const Message = require("./models/Message");
+const Match = require("./models/Match");
 const jwt = require("jsonwebtoken");
 
 module.exports = (io) => {
@@ -26,12 +27,16 @@ module.exports = (io) => {
     socket.on("sendMessage", async (data) => {
       try {
         const { receiverId, content } = data;
+        const isMatch = await Match.exists({ users: { $all: [socket.userId, receiverId] } });
+        if (!isMatch || !content?.trim()) {
+          return socket.emit("messageError", { message: "You can only message your matches" });
+        }
 
         // Save to database
         const message = await Message.create({
           sender: socket.userId,
           receiver: receiverId,
-          content,
+          content: content.trim(),
         });
 
         const populated = await message.populate([
