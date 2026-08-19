@@ -13,6 +13,7 @@ import Discover from "./pages/Discover";
 import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
 import Matches from "./pages/Matches";
+import Chat from "./pages/Chat";
 
 function App() {
   const [showIntro, setShowIntro] = useState(true);
@@ -71,6 +72,16 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Matches />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Chat */}
+              <Route
+                path="/chat/:userId"
+                element={
+                  <ProtectedRoute>
+                    <Chat />
                   </ProtectedRoute>
                 }
               />
